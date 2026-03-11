@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GameProvider } from "@/contexts/GameContext";
+import LandingPage from "./pages/LandingPage";
 import TitlePage from "./pages/TitlePage";
 import RulesPage from "./pages/RulesPage";
 import LobbyPage from "./pages/LobbyPage";
@@ -22,7 +23,8 @@ const App = () => (
       <GameProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<TitlePage />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/game" element={<TitlePage />} />
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
             <Route path="/play" element={<PlayerGamePage />} />
