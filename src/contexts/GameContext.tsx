@@ -307,6 +307,26 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setError(null);
   }, [clearTimer]);
 
+  const addDemoPlayers = useCallback(() => {
+    if (!isDemo) return;
+    const demoNames = ['Алексей', 'Мария', 'Дмитрий', 'Елена', 'Сергей', 'Ольга'];
+    setRoomState(prev => {
+      if (!prev) return prev;
+      const remaining = MAX_PLAYERS - prev.players.length;
+      const toAdd = demoNames.slice(0, remaining);
+      const newPlayers = toAdd.map((name, i) => ({
+        id: generateId(),
+        name,
+        speed: INITIAL_SPEED,
+        position: prev.players.length + i + 1,
+        status: 'waiting' as PlayerStatus,
+        connected: true,
+        answers: {},
+      }));
+      return { ...prev, players: [...prev.players, ...newPlayers] };
+    });
+  }, [isDemo]);
+
   return (
     <GameContext.Provider value={{
       role, roomState, myPlayerId, error, connected, isDemo,
