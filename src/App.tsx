@@ -23,7 +23,8 @@ const App = () => (
       <GameProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<TitlePage />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/game" element={<TitlePage />} />
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
             <Route path="/play" element={<PlayerGamePage />} />
