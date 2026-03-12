@@ -16,6 +16,7 @@ export interface Player {
   status: PlayerStatus;
   connected: boolean;
   answers: Record<number, unknown>;
+  adminPlayerComment?: string;
 }
 
 export interface TimerState {

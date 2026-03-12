@@ -118,8 +118,10 @@ const AdminPanelPage = () => {
                 player={player}
                 showAnswer
                 showControls={isPlaying || isExpert}
+                showCommentInput={isPlaying || isExpert}
                 currentStage={roomState.currentStage}
                 onAdjustSpeed={(delta) => game.adjustSpeed(player.id, delta)}
+                onPlayerComment={(comment) => game.setPlayerComment(player.id, comment)}
               />
             </motion.div>
           ))}
