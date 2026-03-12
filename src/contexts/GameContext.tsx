@@ -274,6 +274,23 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       players: prev.players.map(p => ({ ...p, status: 'comment' as PlayerStatus })) } : prev);
   }, [isDemo]);
 
+  const setPlayerComment = useCallback((playerId: string, comment: string) => {
+    if (!isDemo) {
+      const socket = connectSocket();
+      socket?.emit('admin-player-comment', { playerId, comment });
+      return;
+    }
+    setRoomState(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        players: prev.players.map(p =>
+          p.id === playerId ? { ...p, adminPlayerComment: comment } : p
+        ),
+      };
+    });
+  }, [isDemo]);
+
   const nextStage = useCallback(() => {
     if (!isDemo) {
       const socket = connectSocket();
