@@ -18,6 +18,7 @@ interface GameContextType {
   submitAnswer: (stageIndex: number, answer: unknown) => void;
   adjustSpeed: (playerId: string, delta: 10 | -10) => void;
   broadcastComment: (comment: string) => void;
+  setPlayerComment: (playerId: string, comment: string) => void;
   nextStage: () => void;
   finishGame: () => void;
   timerControl: (action: 'start' | 'pause' | 'resume' | 'restart') => void;
