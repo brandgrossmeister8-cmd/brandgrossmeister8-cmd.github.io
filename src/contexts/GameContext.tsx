@@ -315,6 +315,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (!stage) return prev;
       switch (action) {
         case 'start':
+          startLocalTimer();
+          // Generate demo answers after a random delay
+          setTimeout(() => generateDemoAnswers(prev.currentStage), 1500 + Math.random() * 3000);
+          return { ...prev, timer: { ...prev.timer, running: true } };
         case 'resume':
           startLocalTimer();
           return { ...prev, timer: { ...prev.timer, running: true } };
@@ -324,11 +328,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         case 'restart':
           clearTimer();
           const newTimer = { running: false, remaining: stage.timerSeconds, total: stage.timerSeconds };
-          return { ...prev, timer: newTimer };
+          return { ...prev, timer: newTimer, players: prev.players.map(p => ({ ...p, status: 'waiting' as PlayerStatus })) };
         default: return prev;
       }
     });
-  }, [isDemo, startLocalTimer, clearTimer]);
+  }, [isDemo, startLocalTimer, clearTimer, generateDemoAnswers]);
 
   const setSpectatorModeCtx = useCallback((mode: SpectatorMode, focusPlayerId?: string) => {
     if (!isDemo) {
