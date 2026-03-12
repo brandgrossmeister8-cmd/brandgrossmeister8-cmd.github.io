@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Player, PlayerStatus } from '@/types/game';
 import { SpeedBadge } from './SpeedBadge';
 import { Button } from '@/components/ui/button';
@@ -7,8 +8,10 @@ interface PlayerCardProps {
   player: Player;
   showAnswer?: boolean;
   showControls?: boolean;
+  showCommentInput?: boolean;
   currentStage?: number;
   onAdjustSpeed?: (delta: 10 | -10) => void;
+  onPlayerComment?: (comment: string) => void;
 }
 
 const STATUS_LABELS: Record<PlayerStatus, string> = {
@@ -27,8 +30,23 @@ const STATUS_COLORS: Record<PlayerStatus, string> = {
   next: 'bg-primary/20 text-primary',
 };
 
-export function PlayerCard({ player, showAnswer, showControls, currentStage, onAdjustSpeed }: PlayerCardProps) {
+function formatAnswer(answer: unknown): string {
+  if (typeof answer === 'string') return answer;
+  if (typeof answer === 'number') return `${answer}%`;
+  if (typeof answer === 'object' && answer !== null) {
+    const obj = answer as Record<string, unknown>;
+    if (obj.type && obj.fields) {
+      const fields = obj.fields as Record<string, string>;
+      return `${obj.type}: ${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join(', ')}`;
+    }
+    return JSON.stringify(answer, null, 2);
+  }
+  return String(answer);
+}
+
+export function PlayerCard({ player, showAnswer, showControls, showCommentInput, currentStage, onAdjustSpeed, onPlayerComment }: PlayerCardProps) {
   const answer = currentStage !== undefined ? player.answers[currentStage] : undefined;
+  const [localComment, setLocalComment] = useState(player.adminPlayerComment || '');
 
   return (
     <div className={cn(
@@ -54,7 +72,13 @@ export function PlayerCard({ player, showAnswer, showControls, currentStage, onA
 
       {showAnswer && answer !== undefined && (
         <div className="p-2 rounded-lg bg-muted text-xs break-words max-h-24 overflow-y-auto">
-          {typeof answer === 'string' ? answer : JSON.stringify(answer, null, 2)}
+          {formatAnswer(answer)}
+        </div>
+      )}
+
+      {showAnswer && answer === undefined && player.status === 'waiting' && (
+        <div className="p-2 rounded-lg bg-muted/50 text-xs text-muted-foreground text-center italic">
+          Ещё не ответил...
         </div>
       )}
 
@@ -66,6 +90,32 @@ export function PlayerCard({ player, showAnswer, showControls, currentStage, onA
           <Button size="sm" variant="destructive" onClick={() => onAdjustSpeed(-10)} className="flex-1">
             -10 км/ч
           </Button>
+        </div>
+      )}
+
+      {showCommentInput && onPlayerComment && (
+        <div className="space-y-2 pt-1 border-t border-border/50">
+          <textarea
+            value={localComment}
+            onChange={e => setLocalComment(e.target.value)}
+            placeholder={`Комментарий для ${player.name}...`}
+            rows={2}
+            className="w-full p-2 rounded-lg border bg-background resize-none focus:ring-2 focus:ring-primary outline-none text-xs"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full text-xs"
+            onClick={() => onPlayerComment(localComment)}
+            disabled={!localComment.trim()}
+          >
+            💬 Сохранить комментарий
+          </Button>
+          {player.adminPlayerComment && (
+            <div className="p-2 rounded-lg bg-primary/5 border border-primary/20 text-xs">
+              <span className="font-medium text-primary">Комментарий:</span> {player.adminPlayerComment}
+            </div>
+          )}
         </div>
       )}
     </div>
