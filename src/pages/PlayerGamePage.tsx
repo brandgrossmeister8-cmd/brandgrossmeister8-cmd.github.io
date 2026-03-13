@@ -33,7 +33,7 @@ const PlayerGamePage = () => {
   if (roomState.phase === 'final') {
     const sorted = [...roomState.players].sort((a, b) => b.speed - a.speed);
     return (
-      <div className="min-h-screen bg-background px-4 py-6">
+      <div className="min-h-screen bg-background bg-speed-lines px-4 py-6">
         <BrandHeader subtitle="Финиш!" compact />
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md mx-auto space-y-6 mt-4">
           <div className="text-center">
