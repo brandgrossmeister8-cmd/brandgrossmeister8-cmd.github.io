@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 
 const LobbyPage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const game = useGame();
   const [name, setName] = useState('');
   const [business, setBusiness] = useState('');
@@ -18,12 +18,13 @@ const LobbyPage = () => {
 
   // Автоматически заполняем код из URL и переключаем в режим игрока
   useEffect(() => {
-    const codeFromUrl = searchParams.get('code');
+    const params = new URLSearchParams(location.search);
+    const codeFromUrl = params.get('code');
     if (codeFromUrl) {
       setCode(codeFromUrl.toUpperCase());
       setMode('player');
     }
-  }, [searchParams]);
+  }, [location.search]);
 
   const handleCreateRoom = () => {
     game.createRoom();
@@ -173,7 +174,7 @@ const LobbyPage = () => {
                 <p className="text-2xl font-bold text-primary-foreground tracking-widest">{code}</p>
               </div>
             )}
-            {!searchParams.get('code') && (
+            {!new URLSearchParams(location.search).get('code') && (
               <input
                 value={code}
                 onChange={e => setCode(e.target.value.toUpperCase())}
