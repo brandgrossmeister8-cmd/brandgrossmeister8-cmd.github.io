@@ -97,7 +97,12 @@ const PlayerGamePage = () => {
 
   // Playing stage
   return (
-    <div className="min-h-screen bg-background px-4 py-6">
+    <div className="min-h-screen bg-background bg-speed-lines px-4 py-6 relative">
+      {/* Top racing stripe */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-brand" />
+      <div className="absolute top-1 left-0 right-0 h-[3px]" style={{
+        background: 'repeating-linear-gradient(90deg, hsl(0 72% 51%) 0px, hsl(0 72% 51%) 10px, hsl(0 0% 100% / 0.9) 10px, hsl(0 0% 100% / 0.9) 20px)'
+      }} />
       <BrandHeader compact />
       <div className="max-w-md mx-auto space-y-4 mt-2">
         {/* Speed + stage header */}
