@@ -45,6 +45,22 @@ function generateId(): string {
   return Math.random().toString(36).substring(2, 12);
 }
 
+// Shared demo room storage via localStorage for cross-tab support
+function saveDemoRoom(room: RoomState) {
+  try {
+    const rooms = JSON.parse(localStorage.getItem('demo_rooms') || '{}');
+    rooms[room.code] = room;
+    localStorage.setItem('demo_rooms', JSON.stringify(rooms));
+  } catch {}
+}
+
+function getDemoRoom(code: string): RoomState | null {
+  try {
+    const rooms = JSON.parse(localStorage.getItem('demo_rooms') || '{}');
+    return rooms[code] || null;
+  } catch { return null; }
+}
+
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<Role | null>(null);
   const [roomState, setRoomState] = useState<RoomState | null>(null);
