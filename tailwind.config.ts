@@ -112,6 +112,22 @@ export default {
           "0%, 100%": { transform: "rotate(-5deg)" },
           "50%": { transform: "rotate(5deg)" },
         },
+        "engine-rumble": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "25%": { transform: "translateX(-1px) translateY(0.5px)" },
+          "50%": { transform: "translateX(1px) translateY(-0.5px)" },
+          "75%": { transform: "translateX(-0.5px) translateY(0.5px)" },
+        },
+        "speed-dash": {
+          "0%": { transform: "translateX(-100%)", opacity: "0" },
+          "30%": { opacity: "0.6" },
+          "100%": { transform: "translateX(300%)", opacity: "0" },
+        },
+        "traffic-light": {
+          "0%": { backgroundColor: "hsl(var(--destructive))" },
+          "33%": { backgroundColor: "hsl(var(--spectator-accent))" },
+          "66%, 100%": { backgroundColor: "hsl(var(--success))" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -120,6 +136,8 @@ export default {
         "car-move": "car-move 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
         "overtake": "overtake 0.6s ease-in-out",
         "flag-wave": "flag-wave 1s ease-in-out infinite",
+        "engine-rumble": "engine-rumble 0.1s ease-in-out infinite",
+        "speed-dash": "speed-dash 1.5s ease-out infinite",
       },
     },
   },
