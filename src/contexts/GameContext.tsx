@@ -93,8 +93,47 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
       setConnected(true);
+      
+      // В демо-режиме: загружаем последнюю комнату при старте (для зрителей в новой вкладке)
+      try {
+        const rooms = JSON.parse(localStorage.getItem('demo_rooms') || '{}');
+        const codes = Object.keys(rooms);
+        if (codes.length > 0) {
+          const lastCode = codes[codes.length - 1];
+          const lastRoom = rooms[lastCode];
+          if (lastRoom) {
+            setRoomState(lastRoom);
+          }
+        }
+      } catch {}
+      
+      // Подписываемся на изменения localStorage для синхронизации между вкладками
+      const syncHandler = (e: StorageEvent) => {
+        if (e.key === 'demo_rooms' && e.newValue) {
+          try {
+            const rooms = JSON.parse(e.newValue);
+            const codes = Object.keys(rooms);
+            if (codes.length > 0) {
+              const lastCode = codes[codes.length - 1];
+              const lastRoom = rooms[lastCode];
+              if (lastRoom) {
+                setRoomState(lastRoom);
+              }
+            }
+          } catch {}
+        }
+      };
+      window.addEventListener('storage', syncHandler);
+      return () => window.removeEventListener('storage', syncHandler);
     }
   }, [isDemo]);
+
+  // Автоматически сохраняем изменения roomState в localStorage (только в демо-режиме)
+  useEffect(() => {
+    if (isDemo && roomState) {
+      saveDemoRoom(roomState);
+    }
+  }, [isDemo, roomState]);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
@@ -135,7 +174,28 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
               break;
             case 'choice-then-cards':
               const type = Math.random() > 0.5 ? 'B2B' : 'B2C';
-              answer = { type, fields: { sphere: 'IT', size: '50-200', decision: 'CEO' } };
+              const demoB2B = {
+                'market': 'Корпоративный',
+                'why-business': 'Оптимизация процессов',
+                'industry': 'IT',
+                'business-size': '50-200 чел',
+                'relationship': 'Долгосрочно',
+                'decision-maker': 'Директор по развитию',
+                'personal-why': 'Карьерный рост',
+              };
+              const demoB2C = {
+                'market': 'Массовый',
+                'why': 'Для семьи',
+                'behavior': 'Рациональная',
+                'family': 'Семья 3-4 человека',
+                'children': '2 детей',
+                'location': 'Горожане',
+                'age': '30-45',
+                'gender': 'Не важно',
+                'economy': 'Средний доход',
+                'motive': 'Удобство',
+              };
+              answer = { type, params: type === 'B2B' ? demoB2B : demoB2C };
               break;
           }
           return {
@@ -280,8 +340,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     }
     setRoomState(prev => {
       if (!prev) return prev;
+      const currentStage = prev.currentStage;
       const players = prev.players.map(p =>
-        p.id === playerId ? { ...p, speed: Math.max(0, p.speed + delta), status: 'decided' as PlayerStatus } : p
+        p.id === playerId ? { 
+          ...p, 
+          speed: Math.max(0, p.speed + delta), 
+          status: 'decided' as PlayerStatus,
+          lastSpeedDelta: { ...(p.lastSpeedDelta || {}), [currentStage]: delta }
+        } : p
       );
       // Recalculate positions
       const sorted = [...players].sort((a, b) => b.speed - a.speed);
@@ -406,20 +472,24 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const addDemoPlayers = useCallback(() => {
     if (!isDemo) return;
     const demoNames = ['Алексей', 'Мария', 'Дмитрий', 'Елена', 'Сергей', 'Ольга'];
+    const demoBusinesses = ['Строительный', 'Детский центр', 'Ювелирные изделия', 'IT-консалтинг', 'Кафе', 'Салон красоты'];
+    
     setRoomState(prev => {
-      if (!prev) return prev;
-      const remaining = MAX_PLAYERS - prev.players.length;
-      const toAdd = demoNames.slice(0, remaining);
-      const newPlayers = toAdd.map((name, i) => ({
+      if (!prev || prev.players.length >= MAX_PLAYERS) return prev;
+      
+      const index = prev.players.length;
+      const newPlayer = {
         id: generateId(),
-        name,
+        name: demoNames[index],
+        business: demoBusinesses[index],
         speed: INITIAL_SPEED,
-        position: prev.players.length + i + 1,
+        position: index + 1,
         status: 'waiting' as PlayerStatus,
         connected: true,
         answers: {},
-      }));
-      return { ...prev, players: [...prev.players, ...newPlayers] };
+      };
+      
+      return { ...prev, players: [...prev.players, newPlayer] };
     });
   }, [isDemo]);
 

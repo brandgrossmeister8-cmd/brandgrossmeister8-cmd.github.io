@@ -11,6 +11,7 @@ const LobbyPage = () => {
   const navigate = useNavigate();
   const game = useGame();
   const [name, setName] = useState('');
+  const [business, setBusiness] = useState('');
   const [code, setCode] = useState('');
   const [mode, setMode] = useState<'select' | 'admin' | 'player' | 'spectator'>('select');
 
@@ -20,8 +21,8 @@ const LobbyPage = () => {
   };
 
   const handleJoin = () => {
-    if (!code.trim() || !name.trim()) return;
-    game.joinRoom(code.trim().toUpperCase(), name.trim());
+    if (!code.trim() || !name.trim() || !business.trim()) return;
+    game.joinRoom(code.trim().toUpperCase(), name.trim(), business.trim());
   };
 
   const handleJoinSpectator = () => {
@@ -112,9 +113,9 @@ const LobbyPage = () => {
               ))}
             </div>
 
-            {game.isDemo && game.roomState.players.length < 6 && (
+            {game.isDemo && game.roomState.players.length < MAX_PLAYERS && (
               <Button variant="outline" size="sm" className="w-full" onClick={game.addDemoPlayers}>
-                🤖 Добавить тестовых игроков
+                🤖 Добавить игрока ({game.roomState.players.length}/{MAX_PLAYERS})
               </Button>
             )}
 
@@ -170,8 +171,15 @@ const LobbyPage = () => {
               maxLength={20}
               className="w-full p-3 rounded-lg border bg-background focus:ring-2 focus:ring-primary outline-none"
             />
+            <input
+              value={business}
+              onChange={e => setBusiness(e.target.value)}
+              placeholder="Ваш бизнес (например: строительный, детский центр)"
+              maxLength={50}
+              className="w-full p-3 rounded-lg border bg-background focus:ring-2 focus:ring-primary outline-none"
+            />
             {game.error && <p className="text-destructive text-sm text-center">{game.error}</p>}
-            <Button variant="hero" size="lg" className="w-full" onClick={handleJoin} disabled={!code || !name}>
+            <Button variant="hero" size="lg" className="w-full" onClick={handleJoin} disabled={!code || !name || !business}>
               Присоединиться
             </Button>
             <Button variant="ghost" size="sm" className="w-full" onClick={() => setMode('select')}>

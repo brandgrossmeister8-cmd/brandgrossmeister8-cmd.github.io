@@ -22,9 +22,9 @@ const LandingPage = () => {
 
   const features = [
     { icon: Users, title: 'До 6 игроков', desc: 'Командная работа в формате Zoom-тренинга' },
-    { icon: Monitor, title: 'Spectator View', desc: 'Общий экран для трансляции в Zoom' },
+    { icon: Monitor, title: 'Внешний вид', desc: 'Общий экран для трансляции в Zoom' },
     { icon: Timer, title: 'Таймеры этапов', desc: 'Контроль времени на каждый этап' },
-    { icon: Zap, title: 'Realtime', desc: 'Мгновенная синхронизация через WebSocket' },
+    { icon: Zap, title: 'Синхронизация', desc: 'Мгновенная синхронизация' },
     { icon: Target, title: '6 этапов', desc: 'От ассортимента до креативности' },
     { icon: Trophy, title: 'Рейтинг', desc: 'Живой лидерборд с анимациями обгонов' },
   ];
@@ -77,8 +77,7 @@ const LandingPage = () => {
             className="text-lg md:text-xl text-white max-w-2xl mx-auto mb-4"
             initial="hidden" animate="visible" variants={fadeUp} custom={2}
           >
-            Тренинг по маркетинговой стратегии в метафоре гоночной трассы.
-            <br />6 городов - 6 решений.
+            Тренинг на основе технологии сиситемного продвижения Ии Имшинецкой.
           </motion.p>
 
           <motion.div
@@ -151,7 +150,6 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto">
           <motion.div className="text-center mb-16" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">Маршрут гонки</h2>
-            <p className="text-muted-foreground">6 городов — 6 ключевых маркетинговых решений</p>
           </motion.div>
 
           <div className="relative">
@@ -171,17 +169,17 @@ const LandingPage = () => {
                   <Card className="bg-card/5 border-dashboard-border backdrop-blur-sm">
                     <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center gap-3">
                       <div className="flex items-center gap-3 flex-1">
-                        <MapPin className="w-5 h-5 text-secondary shrink-0" />
+                        <MapPin className="w-5 h-5 text-white shrink-0" />
                         <div>
-                          <h3 className="font-bold text-[#2A168F]">{s.city}</h3>
-                          <p className="text-xs text-muted-foreground">Этап {i + 1}</p>
+                          <h3 className="font-bold text-white">{s.city}</h3>
+                          <p className="text-xs text-white">Этап {i + 1}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
-                        <span className="flex items-center gap-1 text-muted-foreground">
+                        <span className="flex items-center gap-1 text-white">
                           <Timer className="w-4 h-4" /> {s.time}
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-white">
                           {s.type}
                         </span>
                       </div>
@@ -197,7 +195,7 @@ const LandingPage = () => {
               >
                 <div className="absolute left-4 md:left-6 top-3 w-4 h-4 rounded-full bg-spectator border-2 border-background" />
                 <div className="flex items-center gap-3 p-5">
-                  <Flag className="w-6 h-6 text-spectator" />
+                  <Flag className="w-6 h-6 text-white" />
                   <span className="font-bold text-primary-foreground text-lg">Финиш — итоговый рейтинг</span>
                 </div>
               </motion.div>
@@ -215,9 +213,9 @@ const LandingPage = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '01', title: 'Создайте комнату', desc: 'Ведущий создаёт игровую комнату и получает код для участников. До 6 игроков.' },
-              { step: '02', title: 'Проходите этапы', desc: 'Каждый город — маркетинговый вопрос. Ведущий оценивает ответы: +10 или −10 км/ч.' },
-              { step: '03', title: 'Финишируйте', desc: 'Финальная скорость = качество маркетинговой стратегии. 120 км/ч — идеальный результат.' },
+              { step: '01', title: 'Комната для игры', desc: 'Ведущий создаёт игровую комнату и передает код всем участникам. До 6 игроков.' },
+              { step: '02', title: 'Этапы игры', desc: 'Каждый город — маркетинговый вопрос. Ведущий оценивает ответы: +10 или −10 км/ч.' },
+              { step: '03', title: 'Окончание игры', desc: 'Финальная скорость = качество маркетинговой стратегии. 120 км/ч — идеальный результат.' },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -236,11 +234,11 @@ const LandingPage = () => {
       </section>
 
       {/* Speed scale */}
-      <section className="py-24 px-6 bg-gradient-dark">
+      <section className="py-24 px-6 bg-gradient-dark text-white">
         <div className="max-w-3xl mx-auto">
           <motion.div className="text-center mb-12" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">Шкала скорости</h2>
-            <p className="text-muted-foreground">Что означает ваша финальная скорость</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Шкала скорости</h2>
+            <p className="text-white">Что означает ваша финальная скорость</p>
           </motion.div>
 
           <div className="space-y-4">
@@ -257,11 +255,11 @@ const LandingPage = () => {
                 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
               >
                 <div className="w-16 text-right">
-                  <span className="text-2xl font-bold text-primary-foreground">{item.speed}</span>
+                  <span className="text-2xl font-bold text-white">{item.speed}</span>
                 </div>
                 <div className={`w-3 h-3 rounded-full ${item.color}`} />
                 <div className="flex-1 py-3 px-4 rounded-lg bg-card/5 border border-dashboard-border">
-                  <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <span className="text-sm text-white">{item.label}</span>
                 </div>
                 <div className="hidden sm:block flex-1 max-w-[200px]">
                   <div className="h-2 rounded-full bg-muted/20 overflow-hidden">
@@ -295,9 +293,9 @@ const LandingPage = () => {
             <div className="w-6 h-6 rounded-full bg-gradient-brand flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-xs">И</span>
             </div>
-            <span className="text-sm font-semibold">{BRAND_NAME}</span>
+            <span className="text-sm font-semibold" style={{ color: '#A977FA' }}>{BRAND_NAME}</span>
           </div>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} {BRAND_NAME}. Все права защищены.</p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} <span style={{ color: '#A977FA' }}>{BRAND_NAME}</span>. Все права защищены.</p>
         </div>
       </footer>
     </div>

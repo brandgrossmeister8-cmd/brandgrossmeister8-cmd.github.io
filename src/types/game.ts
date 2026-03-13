@@ -17,6 +17,8 @@ export interface Player {
   connected: boolean;
   answers: Record<number, unknown>;
   adminPlayerComment?: string;
+  business?: string;
+  lastSpeedDelta?: Record<number, 10 | -10>; // История решений по этапам
 }
 
 export interface TimerState {

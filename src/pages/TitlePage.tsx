@@ -34,11 +34,11 @@ const TitlePage = () => {
         {/* Dashboard frame */}
         <div className="bg-dashboard rounded-2xl border border-dashboard-border p-8 shadow-brand-lg max-w-lg w-full">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-4xl">🏎️</span>
+            <span className="text-5xl">🚕</span>
           </div>
           <h2 className="text-3xl font-bold text-primary-foreground mb-2">{GAME_TITLE}</h2>
           <p className="text-muted-foreground mb-6 text-sm">
-            Интерактивная бизнес-игра в метафоре гоночной трассы
+            Интерактивная бизнес-игра
           </p>
 
           {/* Speedometer decoration */}

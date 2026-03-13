@@ -5,10 +5,13 @@ import { Leaderboard } from '@/components/game/Leaderboard';
 import { SpeedBadge } from '@/components/game/SpeedBadge';
 import { TimerDisplay } from '@/components/game/TimerDisplay';
 import { STAGES, getInterpretation, GAME_TITLE } from '@/config/stages';
+import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const SpectatorViewPage = () => {
   const { roomState } = useGame();
+  const navigate = useNavigate();
 
   if (!roomState) {
     return (
@@ -159,6 +162,14 @@ const SpectatorViewPage = () => {
               ))}
             </div>
           )}
+          <Button 
+            variant="hero" 
+            size="lg" 
+            onClick={() => navigate('/')}
+            className="mt-6"
+          >
+            🚕 Начать новую игру
+          </Button>
         </div>
       </div>
     );

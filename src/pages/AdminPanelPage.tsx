@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { TimerDisplay } from '@/components/game/TimerDisplay';
@@ -12,7 +11,6 @@ import { motion } from 'framer-motion';
 
 const AdminPanelPage = () => {
   const game = useGame();
-  const [commentText, setCommentText] = useState('');
   const { roomState } = game;
 
   if (!roomState) {
@@ -53,7 +51,10 @@ const AdminPanelPage = () => {
             ))}
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={() => game.setSpectatorMode('final')}>
+            <Button variant="outline" className="flex-1" onClick={() => {
+              game.setSpectatorMode('final');
+              window.open('/spectator', '_blank');
+            }}>
               📺 Показать финал зрителям
             </Button>
             <Button variant="hero" className="flex-1" onClick={() => game.restartGame()}>
@@ -67,8 +68,7 @@ const AdminPanelPage = () => {
 
   const spectatorModes: { mode: SpectatorMode; label: string }[] = [
     { mode: 'track', label: '🏎️ Трасса' },
-    { mode: 'ranking', label: '🏆 Рейтинг' },
-    { mode: 'focus', label: '🔍 Фокус' },
+    { mode: 'focus', label: '🔍 Фокус — выбор игрока' },
     { mode: 'comment', label: '💬 Комментарий' },
     { mode: 'final', label: '🏁 Финал' },
   ];
@@ -109,6 +109,19 @@ const AdminPanelPage = () => {
               <Button size="sm" variant="outline" onClick={() => game.timerControl('pause')}>⏸️ Пауза</Button>
             )}
             <Button size="sm" variant="outline" onClick={() => game.timerControl('restart')}>🔄 Сброс</Button>
+            {isExpert && (
+              <Button size="sm" variant="success" onClick={() => game.expertContinue()}>
+                ➡️ Следующий этап
+              </Button>
+            )}
+            {isPlaying && roomState.currentStage < STAGES.length - 1 && (
+              <Button size="sm" variant="success" onClick={() => game.nextStage()}>
+                ⏭️ Следующий этап
+              </Button>
+            )}
+            <Button size="sm" variant="destructive" onClick={() => game.finishGame()}>
+              🏁 Завершить гонку
+            </Button>
           </div>
         </div>
 
@@ -123,50 +136,12 @@ const AdminPanelPage = () => {
                 player={player}
                 showAnswer
                 showControls={isPlaying || isExpert}
-                showCommentInput={isPlaying || isExpert}
                 currentStage={roomState.currentStage}
+                stageConfig={stage ?? undefined}
                 onAdjustSpeed={(delta) => game.adjustSpeed(player.id, delta)}
-                onPlayerComment={(comment) => game.setPlayerComment(player.id, comment)}
               />
             </motion.div>
           ))}
-        </div>
-
-        {/* Broadcast comment */}
-        <div className="bg-card rounded-xl border p-4 space-y-3">
-          <h3 className="font-bold text-sm">💬 Экспертный комментарий</h3>
-          <textarea
-            value={commentText}
-            onChange={e => setCommentText(e.target.value)}
-            placeholder="Введите комментарий для всех участников..."
-            rows={3}
-            className="w-full p-3 rounded-lg border bg-background resize-none focus:ring-2 focus:ring-primary outline-none text-sm"
-          />
-          <Button size="sm" variant="race" onClick={() => { game.broadcastComment(commentText); }}>
-            📤 Отправить комментарий и перейти к разбору
-          </Button>
-        </div>
-
-        {/* Navigation controls */}
-        <div className="flex flex-wrap gap-3">
-          {isExpert && (
-            <Button variant="hero" onClick={() => game.expertContinue()}>
-              ➡️ Следующий этап
-            </Button>
-          )}
-          {isPlaying && (
-            <Button variant="outline" onClick={() => { game.broadcastComment(commentText || 'Переход к разбору'); }}>
-              📋 Экспертный разбор
-            </Button>
-          )}
-          {isPlaying && roomState.currentStage < STAGES.length - 1 && (
-            <Button variant="outline" onClick={() => game.nextStage()}>
-              ⏭️ Пропустить к следующему
-            </Button>
-          )}
-          <Button variant="destructive" onClick={() => game.finishGame()}>
-            🏁 Завершить гонку
-          </Button>
         </div>
 
         {/* Spectator mode controls */}
