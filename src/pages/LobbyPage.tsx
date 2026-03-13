@@ -140,6 +140,15 @@ const LobbyPage = () => {
             )}
 
             <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => navigate('/player-demo')}
+            >
+              👁️ Показать панель игрока (демо)
+            </Button>
+
+            <Button
               variant="hero"
               size="lg"
               className="w-full"

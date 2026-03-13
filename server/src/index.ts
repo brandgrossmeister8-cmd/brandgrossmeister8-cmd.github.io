@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
     socket.emit('room-created', toDTO(room));
   });
 
-  socket.on('join-room', ({ code, name }: { code: string; name: string }) => {
+  socket.on('join-room', ({ code, name, business }: { code: string; name: string; business?: string }) => {
     if (!code || !name || typeof code !== 'string' || typeof name !== 'string') {
       socket.emit('error', { message: 'Некорректные данные' });
       return;
@@ -48,7 +48,8 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: 'Комната не найдена' });
       return;
     }
-    const player = addPlayer(room, socket.id, name.trim());
+    const normalizedBusiness = typeof business === 'string' ? business.trim() : '';
+    const player = addPlayer(room, socket.id, name.trim(), normalizedBusiness);
     if (!player) {
       socket.emit('error', { message: 'Невозможно присоединиться' });
       return;
@@ -93,7 +94,7 @@ io.on('connection', (socket) => {
     const room = getRoomBySocketId(socket.id);
     if (!room || room.adminSocketId !== socket.id) return;
     if (delta !== 10 && delta !== -10) return;
-    adjustSpeed(room, playerId, delta as 10 | -10);
+    adjustSpeed(room, playerId, delta as 10 | -10, room.currentStage);
     broadcastRoom(room.code);
   });
 

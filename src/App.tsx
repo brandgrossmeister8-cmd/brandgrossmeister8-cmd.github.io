@@ -9,6 +9,7 @@ import TitlePage from "./pages/TitlePage";
 import RulesPage from "./pages/RulesPage";
 import LobbyPage from "./pages/LobbyPage";
 import PlayerGamePage from "./pages/PlayerGamePage";
+import PlayerPanelDemoPage from "./pages/PlayerPanelDemoPage";
 import AdminPanelPage from "./pages/AdminPanelPage";
 import SpectatorViewPage from "./pages/SpectatorViewPage";
 import NotFound from "./pages/NotFound";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
             <Route path="/play" element={<PlayerGamePage />} />
+            <Route path="/player-demo" element={<PlayerPanelDemoPage />} />
             <Route path="/admin" element={<AdminPanelPage />} />
             <Route path="/spectator" element={<SpectatorViewPage />} />
             <Route path="*" element={<NotFound />} />

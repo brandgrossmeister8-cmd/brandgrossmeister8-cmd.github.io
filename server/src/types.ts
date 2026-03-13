@@ -7,11 +7,13 @@ export interface Player {
   id: string;
   socketId: string;
   name: string;
+  business?: string;
   speed: number;
   position: number;
   status: PlayerStatus;
   connected: boolean;
   answers: Record<number, unknown>;
+  lastSpeedDelta?: Record<number, 10 | -10>;
 }
 
 export interface TimerState {

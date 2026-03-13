@@ -61,7 +61,7 @@ export function getRoomBySocketId(socketId: string): Room | undefined {
   return undefined;
 }
 
-export function addPlayer(room: Room, socketId: string, name: string): Player | null {
+export function addPlayer(room: Room, socketId: string, name: string, business?: string): Player | null {
   if (room.players.length >= MAX_PLAYERS) return null;
   if (room.phase !== 'lobby') {
     // Allow reconnect
@@ -77,6 +77,7 @@ export function addPlayer(room: Room, socketId: string, name: string): Player | 
     id: generateId(),
     socketId,
     name: name.substring(0, 20),
+    business: business ? business.substring(0, 50) : undefined,
     speed: INITIAL_SPEED,
     position: room.players.length + 1,
     status: 'waiting',
@@ -103,11 +104,12 @@ export function recalcPositions(room: Room) {
   });
 }
 
-export function adjustSpeed(room: Room, playerId: string, delta: 10 | -10): boolean {
+export function adjustSpeed(room: Room, playerId: string, delta: 10 | -10, stageIndex: number): boolean {
   const player = room.players.find(p => p.id === playerId);
   if (!player) return false;
   player.speed = Math.max(0, player.speed + delta);
   player.status = 'decided';
+  player.lastSpeedDelta = { ...(player.lastSpeedDelta || {}), [stageIndex]: delta };
   recalcPositions(room);
   return true;
 }
