@@ -45,6 +45,22 @@ function generateId(): string {
   return Math.random().toString(36).substring(2, 12);
 }
 
+// Shared demo room storage via localStorage for cross-tab support
+function saveDemoRoom(room: RoomState) {
+  try {
+    const rooms = JSON.parse(localStorage.getItem('demo_rooms') || '{}');
+    rooms[room.code] = room;
+    localStorage.setItem('demo_rooms', JSON.stringify(rooms));
+  } catch {}
+}
+
+function getDemoRoom(code: string): RoomState | null {
+  try {
+    const rooms = JSON.parse(localStorage.getItem('demo_rooms') || '{}');
+    return rooms[code] || null;
+  } catch { return null; }
+}
+
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<Role | null>(null);
   const [roomState, setRoomState] = useState<RoomState | null>(null);
@@ -158,7 +174,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const adminId = generateId();
     setMyPlayerId(adminId);
     setRole('admin');
-    setRoomState({
+    const room: RoomState = {
       id: generateId(),
       code,
       adminId,
@@ -168,7 +184,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       timer: { running: false, remaining: 0, total: 0 },
       spectatorMode: 'track',
       adminComment: '',
-    });
+    };
+    setRoomState(room);
+    saveDemoRoom(room);
   }, [isDemo]);
 
   const joinRoom = useCallback((code: string, name: string) => {
@@ -178,23 +196,31 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       setRole('player');
       return;
     }
+    // In demo mode, check both current state AND localStorage for cross-tab support
     setRoomState(prev => {
-      if (!prev || prev.code !== code) {
+      let room = prev;
+      if (!room || room.code !== code) {
+        room = getDemoRoom(code);
+      }
+      if (!room || room.code !== code) {
         setError('Комната не найдена');
         return prev;
       }
-      if (prev.players.length >= MAX_PLAYERS) {
+      if (room.players.length >= MAX_PLAYERS) {
         setError('Максимум 6 игроков');
-        return prev;
+        return room;
       }
       const playerId = generateId();
       setMyPlayerId(playerId);
       setRole('player');
+      setError(null);
       const newPlayer: Player = {
-        id: playerId, name, speed: INITIAL_SPEED, position: prev.players.length + 1,
+        id: playerId, name, speed: INITIAL_SPEED, position: room.players.length + 1,
         status: 'waiting', connected: true, answers: {},
       };
-      return { ...prev, players: [...prev.players, newPlayer] };
+      const updated = { ...room, players: [...room.players, newPlayer] };
+      saveDemoRoom(updated);
+      return updated;
     });
   }, [isDemo]);
 
