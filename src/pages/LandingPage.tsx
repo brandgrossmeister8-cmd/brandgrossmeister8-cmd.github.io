@@ -77,7 +77,7 @@ const LandingPage = () => {
             className="text-lg md:text-xl text-white max-w-2xl mx-auto mb-4"
             initial="hidden" animate="visible" variants={fadeUp} custom={2}
           >
-            Тренинг на основе технологии сиситемного продвижения Ии Имшинецкой.
+            Тренинг на основе технологии системного продвижения Ии Имшинецкой.
           </motion.p>
 
           <motion.div
