@@ -12,7 +12,7 @@ interface GameContextType {
   isDemo: boolean;
 
   createRoom: () => void;
-  joinRoom: (code: string, name: string) => void;
+  joinRoom: (code: string, name: string, business: string) => void;
   joinAsSpectator: (code: string) => void;
   startGame: () => void;
   submitAnswer: (stageIndex: number, answer: unknown) => void;
@@ -249,10 +249,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     saveDemoRoom(room);
   }, [isDemo]);
 
-  const joinRoom = useCallback((code: string, name: string) => {
+  const joinRoom = useCallback((code: string, name: string, business: string) => {
     if (!isDemo) {
       const socket = connectSocket();
-      socket?.emit('join-room', { code, name });
+      socket?.emit('join-room', { code, name, business });
       setRole('player');
       return;
     }
@@ -275,7 +275,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       setRole('player');
       setError(null);
       const newPlayer: Player = {
-        id: playerId, name, speed: INITIAL_SPEED, position: room.players.length + 1,
+        id: playerId, name, business, speed: INITIAL_SPEED, position: room.players.length + 1,
         status: 'waiting', connected: true, answers: {},
       };
       const updated = { ...room, players: [...room.players, newPlayer] };
