@@ -78,7 +78,7 @@ const LobbyPage = () => {
 
   // Admin created room
   if (game.role === 'admin' && game.roomState) {
-    const shareUrl = `${window.location.origin}/lobby?code=${game.roomState.code}`;
+    const shareUrl = `${window.location.origin}/#/lobby?code=${game.roomState.code}`;
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md w-full space-y-6">
