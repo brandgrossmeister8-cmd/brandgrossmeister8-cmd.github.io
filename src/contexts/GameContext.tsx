@@ -196,23 +196,31 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       setRole('player');
       return;
     }
+    // In demo mode, check both current state AND localStorage for cross-tab support
     setRoomState(prev => {
-      if (!prev || prev.code !== code) {
+      let room = prev;
+      if (!room || room.code !== code) {
+        room = getDemoRoom(code);
+      }
+      if (!room || room.code !== code) {
         setError('Комната не найдена');
         return prev;
       }
-      if (prev.players.length >= MAX_PLAYERS) {
+      if (room.players.length >= MAX_PLAYERS) {
         setError('Максимум 6 игроков');
-        return prev;
+        return room;
       }
       const playerId = generateId();
       setMyPlayerId(playerId);
       setRole('player');
+      setError(null);
       const newPlayer: Player = {
-        id: playerId, name, speed: INITIAL_SPEED, position: prev.players.length + 1,
+        id: playerId, name, speed: INITIAL_SPEED, position: room.players.length + 1,
         status: 'waiting', connected: true, answers: {},
       };
-      return { ...prev, players: [...prev.players, newPlayer] };
+      const updated = { ...room, players: [...room.players, newPlayer] };
+      saveDemoRoom(updated);
+      return updated;
     });
   }, [isDemo]);
 
