@@ -263,7 +263,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         room = getDemoRoom(code);
       }
       if (!room || room.code !== code) {
-        setError('Комната не найдена');
+        setError('Комната не найдена. На GitHub-версии без сервера комната доступна только в том же браузере.');
         return prev;
       }
       if (room.players.length >= MAX_PLAYERS) {

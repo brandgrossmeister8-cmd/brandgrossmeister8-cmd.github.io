@@ -15,16 +15,25 @@ const LobbyPage = () => {
   const [business, setBusiness] = useState('');
   const [code, setCode] = useState('');
   const [mode, setMode] = useState<'select' | 'admin' | 'player' | 'spectator'>('select');
+  const getCodeFromUrl = () => {
+    const direct = new URLSearchParams(location.search).get('code');
+    if (direct) return direct.toUpperCase();
+
+    const hashQuery = window.location.hash.includes('?')
+      ? window.location.hash.split('?')[1]
+      : '';
+    const fromHash = new URLSearchParams(hashQuery).get('code');
+    return fromHash ? fromHash.toUpperCase() : '';
+  };
+  const codeFromUrl = getCodeFromUrl();
 
   // Автоматически заполняем код из URL и переключаем в режим игрока
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const codeFromUrl = params.get('code');
     if (codeFromUrl) {
-      setCode(codeFromUrl.toUpperCase());
+      setCode(codeFromUrl);
       setMode('player');
     }
-  }, [location.search]);
+  }, [codeFromUrl]);
 
   const handleCreateRoom = () => {
     game.createRoom();
@@ -174,7 +183,7 @@ const LobbyPage = () => {
                 <p className="text-2xl font-bold text-primary-foreground tracking-widest">{code}</p>
               </div>
             )}
-            {!new URLSearchParams(location.search).get('code') && (
+            {!codeFromUrl && (
               <input
                 value={code}
                 onChange={e => setCode(e.target.value.toUpperCase())}
