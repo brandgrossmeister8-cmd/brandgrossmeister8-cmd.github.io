@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { Button } from '@/components/ui/button';
@@ -9,11 +9,21 @@ import { cn } from '@/lib/utils';
 
 const LobbyPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const game = useGame();
   const [name, setName] = useState('');
   const [business, setBusiness] = useState('');
   const [code, setCode] = useState('');
   const [mode, setMode] = useState<'select' | 'admin' | 'player' | 'spectator'>('select');
+
+  // Автоматически заполняем код из URL и переключаем в режим игрока
+  useEffect(() => {
+    const codeFromUrl = searchParams.get('code');
+    if (codeFromUrl) {
+      setCode(codeFromUrl.toUpperCase());
+      setMode('player');
+    }
+  }, [searchParams]);
 
   const handleCreateRoom = () => {
     game.createRoom();
@@ -157,13 +167,21 @@ const LobbyPage = () => {
         {mode === 'player' && (
           <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">
             <h2 className="text-lg font-bold text-center">Вход в гонку</h2>
-            <input
-              value={code}
-              onChange={e => setCode(e.target.value.toUpperCase())}
-              placeholder="Код комнаты"
-              maxLength={6}
-              className="w-full p-3 rounded-lg border bg-background text-center text-2xl font-bold tracking-widest uppercase focus:ring-2 focus:ring-primary outline-none"
-            />
+            {code && (
+              <div className="text-center p-3 rounded-lg bg-gradient-brand">
+                <p className="text-primary-foreground text-xs mb-1">Код комнаты</p>
+                <p className="text-2xl font-bold text-primary-foreground tracking-widest">{code}</p>
+              </div>
+            )}
+            {!searchParams.get('code') && (
+              <input
+                value={code}
+                onChange={e => setCode(e.target.value.toUpperCase())}
+                placeholder="Код комнаты"
+                maxLength={6}
+                className="w-full p-3 rounded-lg border bg-background text-center text-2xl font-bold tracking-widest uppercase focus:ring-2 focus:ring-primary outline-none"
+              />
+            )}
             <input
               value={name}
               onChange={e => setName(e.target.value)}
