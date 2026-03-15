@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ACCESS_CODES, getCustomNames, saveCustomNames } from '@/config/accessCodes';
+import { ACCESS_CODES, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode } from '@/config/accessCodes';
 import { BRAND_NAME } from '@/config/stages';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -14,6 +14,7 @@ const AdminCodesPage = () => {
   const [customNames, setCustomNames] = useState<Record<string, string>>(getCustomNames);
   const [editingCode, setEditingCode] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [disabledCodes, setDisabledCodes] = useState<string[]>(getDisabledCodes);
 
   const handleLogin = () => {
     if (password === MASTER_PASSWORD) {
@@ -56,6 +57,17 @@ const AdminCodesPage = () => {
   };
 
   const getName = (code: string) => customNames[code] || ACCESS_CODES[code];
+  const isDisabled = (code: string) => disabledCodes.includes(code);
+
+  const toggleCode = (code: string) => {
+    if (isDisabled(code)) {
+      enableCode(code);
+      setDisabledCodes(prev => prev.filter(c => c !== code));
+    } else {
+      disableCode(code);
+      setDisabledCodes(prev => [...prev, code]);
+    }
+  };
 
   if (!authorized) {
     return (
@@ -106,70 +118,87 @@ const AdminCodesPage = () => {
 
         <div className="bg-[#1E0F6E] rounded-2xl border border-white/20 p-6 shadow-2xl space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white">Активные ведущие ({codes.length})</h2>
+            <h2 className="text-lg font-bold text-white">Ведущие ({codes.filter(c => !isDisabled(c)).length} из {codes.length})</h2>
           </div>
 
           <div className="space-y-3">
-            {codes.map((code) => (
-              <div key={code} className="flex items-center gap-3 bg-white/5 rounded-xl border border-white/10 p-4">
-                <div className="flex-1 min-w-0">
-                  {editingCode === code ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && saveEdit(code)}
-                        className="flex-1 p-2 rounded-lg border border-white/20 bg-white/10 text-white text-sm focus:ring-2 focus:ring-white/40 outline-none"
-                        autoFocus
-                      />
+            {codes.map((code) => {
+              const disabled = isDisabled(code);
+              return (
+                <div key={code} className={`flex items-center gap-3 rounded-xl border p-4 ${disabled ? 'bg-white/2 border-white/5 opacity-50' : 'bg-white/5 border-white/10'}`}>
+                  <div className="flex-1 min-w-0">
+                    {editingCode === code ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && saveEdit(code)}
+                          className="flex-1 p-2 rounded-lg border border-white/20 bg-white/10 text-white text-sm focus:ring-2 focus:ring-white/40 outline-none"
+                          autoFocus
+                        />
+                        <Button
+                          size="sm"
+                          className="bg-white text-[#2A168F] hover:bg-white/90 shrink-0"
+                          onClick={() => saveEdit(code)}
+                        >
+                          ✓
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-white/20 text-white hover:bg-white/10 shrink-0"
+                          onClick={() => setEditingCode(null)}
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <p className={`font-bold ${disabled ? 'text-white/40 line-through' : 'text-white'}`}>{getName(code)}</p>
+                        {!disabled && (
+                          <button
+                            onClick={() => startEdit(code, getName(code))}
+                            className="text-white/40 hover:text-white/80 text-xs transition-colors"
+                            title="Изменить имя"
+                          >
+                            ✏️
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-white/50 font-mono text-sm">{code}</p>
+                  </div>
+                  {!disabled && (
+                    <>
                       <Button
                         size="sm"
-                        className="bg-white text-[#2A168F] hover:bg-white/90 shrink-0"
-                        onClick={() => saveEdit(code)}
+                        variant="outline"
+                        className="border-white/20 text-white hover:bg-white/10 shrink-0"
+                        onClick={() => copyCode(code)}
                       >
-                        ✓
+                        {copied === code ? '✓' : 'Код'}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         className="border-white/20 text-white hover:bg-white/10 shrink-0"
-                        onClick={() => setEditingCode(null)}
+                        onClick={() => copyLink(code)}
                       >
-                        ✕
+                        {copied === `link-${code}` ? '✓' : 'Ссылка'}
                       </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <p className="text-white font-bold">{getName(code)}</p>
-                      <button
-                        onClick={() => startEdit(code, getName(code))}
-                        className="text-white/40 hover:text-white/80 text-xs transition-colors"
-                        title="Изменить имя"
-                      >
-                        ✏️
-                      </button>
-                    </div>
+                    </>
                   )}
-                  <p className="text-white/50 font-mono text-sm">{code}</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className={`shrink-0 ${disabled ? 'border-green-500/30 text-green-400 hover:bg-green-500/10' : 'border-red-500/30 text-red-400 hover:bg-red-500/10'}`}
+                    onClick={() => toggleCode(code)}
+                  >
+                    {disabled ? 'Включить' : 'Удалить'}
+                  </Button>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 shrink-0"
-                  onClick={() => copyCode(code)}
-                >
-                  {copied === code ? '✓' : 'Код'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 shrink-0"
-                  onClick={() => copyLink(code)}
-                >
-                  {copied === `link-${code}` ? '✓' : 'Ссылка'}
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

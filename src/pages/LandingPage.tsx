@@ -278,6 +278,9 @@ const LandingPage = () => {
             <span className="text-sm font-semibold" style={{ color: '#A977FA' }}>{BRAND_NAME}</span>
           </div>
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} <span style={{ color: '#A977FA' }}>{BRAND_NAME}</span>. Все права защищены.</p>
+          <button onClick={() => navigate('/admin-codes')} className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+            Администрирование
+          </button>
         </div>
       </footer>
     </div>

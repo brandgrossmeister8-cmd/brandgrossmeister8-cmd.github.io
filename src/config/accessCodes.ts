@@ -18,10 +18,43 @@ export const ACCESS_CODES: Record<string, string> = {
 
 const STORAGE_KEY = 'game-access-code';
 const NAMES_KEY = 'game-custom-names';
+const DISABLED_KEY = 'game-disabled-codes';
+
+export function getDisabledCodes(): string[] {
+  try {
+    const saved = localStorage.getItem(DISABLED_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch { return []; }
+}
+
+export function saveDisabledCodes(codes: string[]) {
+  localStorage.setItem(DISABLED_KEY, JSON.stringify(codes));
+}
+
+export function disableCode(code: string) {
+  const disabled = getDisabledCodes();
+  if (!disabled.includes(code)) {
+    saveDisabledCodes([...disabled, code]);
+  }
+}
+
+export function enableCode(code: string) {
+  const disabled = getDisabledCodes();
+  saveDisabledCodes(disabled.filter(c => c !== code));
+}
+
+export function isCodeActive(code: string): boolean {
+  return !getDisabledCodes().includes(code);
+}
+
+export function getActiveCodes(): string[] {
+  const disabled = getDisabledCodes();
+  return Object.keys(ACCESS_CODES).filter(c => !disabled.includes(c));
+}
 
 export function validateCode(code: string): string | null {
   const upper = code.trim().toUpperCase();
-  return ACCESS_CODES[upper] ? upper : null;
+  return (ACCESS_CODES[upper] && isCodeActive(upper)) ? upper : null;
 }
 
 export function getCustomNames(): Record<string, string> {
@@ -55,5 +88,5 @@ export function clearCode() {
 
 export function isAuthorized(): boolean {
   const code = getSavedCode();
-  return code !== null && ACCESS_CODES[code] !== undefined;
+  return code !== null && ACCESS_CODES[code] !== undefined && isCodeActive(code);
 }

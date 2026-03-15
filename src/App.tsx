@@ -15,6 +15,7 @@ import SpectatorViewPage from "./pages/SpectatorViewPage";
 import AccessPage from "./pages/AccessPage";
 import AdminCodesPage from "./pages/AdminCodesPage";
 import InstructionsPage from "./pages/InstructionsPage";
+import JournalPrintPage from "./pages/JournalPrintPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/spectator" element={<SpectatorViewPage />} />
             <Route path="/admin-codes" element={<AdminCodesPage />} />
             <Route path="/instructions" element={<InstructionsPage />} />
+            <Route path="/journal" element={<JournalPrintPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>

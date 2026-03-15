@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { BRAND_NAME } from '@/config/stages';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -19,9 +19,15 @@ const InstructionsPage = () => {
           <h3 className="text-2xl font-bold text-[#2A168F]">Инструкция для ведущего</h3>
 
           <div className="rounded-xl border bg-card p-6 space-y-4">
-            <h4 className="font-bold text-lg">Как начать игру</h4>
+            <h4 className="font-bold text-lg">Подготовка к игре</h4>
             <ol className="list-decimal list-inside space-y-2 text-sm">
               <li>Получите от администратора <strong>код доступа</strong> или <strong>ссылку</strong></li>
+              <li>Скачайте и распечатайте Бортовой журнал игрока — раздайте каждому участнику перед игрой. В журнале все вопросы и поля для записей</li>
+            </ol>
+            <Button variant="hero" className="w-full bg-[#2A168F] hover:bg-[#2A168F]/90 text-white" onClick={() => navigate('/journal')}>
+              Скачать Бортовой журнал игрока (PDF)
+            </Button>
+            <ol start={3} className="list-decimal list-inside space-y-2 text-sm">
               <li>Откройте сайт и нажмите «Начать игру»</li>
               <li>Введите свой код (например <code className="bg-muted px-1 rounded">RITA-5Z</code>) и нажмите «Войти»</li>
               <li>Код запомнится — при следующем входе вводить не нужно</li>
