@@ -7,10 +7,10 @@ import { GameProvider } from "@/contexts/GameContext";
 import LandingPage from "./pages/LandingPage";
 import TitlePage from "./pages/TitlePage";
 import RulesPage from "./pages/RulesPage";
-import LobbyPage from "./pages/LobbyPage";
+import LobbyOneScreenPage from "./pages/LobbyOneScreenPage";
 import PlayerGamePage from "./pages/PlayerGamePage";
 import PlayerPanelDemoPage from "./pages/PlayerPanelDemoPage";
-import AdminPanelPage from "./pages/AdminPanelPage";
+import AdminOneScreenPage from "./pages/AdminOneScreenPage";
 import SpectatorViewPage from "./pages/SpectatorViewPage";
 import NotFound from "./pages/NotFound";
 
@@ -27,10 +27,10 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/game" element={<TitlePage />} />
             <Route path="/rules" element={<RulesPage />} />
-            <Route path="/lobby" element={<LobbyPage />} />
+            <Route path="/lobby" element={<LobbyOneScreenPage />} />
             <Route path="/play" element={<PlayerGamePage />} />
             <Route path="/player-demo" element={<PlayerPanelDemoPage />} />
-            <Route path="/admin" element={<AdminPanelPage />} />
+            <Route path="/admin" element={<AdminOneScreenPage />} />
             <Route path="/spectator" element={<SpectatorViewPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

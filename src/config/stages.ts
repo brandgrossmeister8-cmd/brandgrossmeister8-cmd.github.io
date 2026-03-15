@@ -126,3 +126,4 @@ export const SPEED_DELTA = 10;
 export const MAX_PLAYERS = 6;
 export const BRAND_NAME = 'ИМШИНЕЦКАЯ И ПАРТНЕРЫ';
 export const GAME_TITLE = 'Маркетинговый заезд';
+export const ONE_SCREEN_MODE = true;

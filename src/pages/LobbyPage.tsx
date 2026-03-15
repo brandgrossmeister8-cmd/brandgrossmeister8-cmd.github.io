@@ -1,54 +1,30 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { Button } from '@/components/ui/button';
 import { MAX_PLAYERS } from '@/config/stages';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
 
 const LobbyPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const game = useGame();
   const [name, setName] = useState('');
   const [business, setBusiness] = useState('');
-  const [code, setCode] = useState('');
-  const [mode, setMode] = useState<'select' | 'admin' | 'player' | 'spectator'>('select');
-  const getCodeFromUrl = () => {
-    const direct = new URLSearchParams(location.search).get('code');
-    if (direct) return direct.toUpperCase();
 
-    const hashQuery = window.location.hash.includes('?')
-      ? window.location.hash.split('?')[1]
-      : '';
-    const fromHash = new URLSearchParams(hashQuery).get('code');
-    return fromHash ? fromHash.toUpperCase() : '';
-  };
-  const codeFromUrl = getCodeFromUrl();
-
-  // Автоматически заполняем код из URL и переключаем в режим игрока
   useEffect(() => {
-    if (codeFromUrl) {
-      setCode(codeFromUrl);
-      setMode('player');
-    }
-  }, [codeFromUrl]);
+    if (!game.roomState) game.createRoom();
+    if (game.role !== 'admin') game.setRole('admin');
+  }, [game]);
 
-  const handleCreateRoom = () => {
-    game.createRoom();
-    setMode('admin');
-  };
+  const players = game.roomState?.players ?? [];
 
-  const handleJoin = () => {
-    if (!code.trim() || !name.trim() || !business.trim()) return;
-    game.joinRoom(code.trim().toUpperCase(), name.trim(), business.trim());
-  };
-
-  const handleJoinSpectator = () => {
-    if (!code.trim()) return;
-    game.joinAsSpectator(code.trim().toUpperCase());
-    navigate('/spectator');
+  const handleAddPlayer = () => {
+    if (!name.trim() || !business.trim()) return;
+    if (players.length >= MAX_PLAYERS) return;
+    game.adminAddPlayer(name.trim(), business.trim());
+    setName('');
+    setBusiness('');
   };
 
   const handleStartGame = () => {
@@ -56,130 +32,295 @@ const LobbyPage = () => {
     navigate('/admin');
   };
 
-  // If player joined successfully
-  if (game.role === 'player' && game.roomState) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md w-full space-y-6">
-          <BrandHeader subtitle="Лобби" compact />
-          <div className="bg-card rounded-2xl border p-6 text-center space-y-4 shadow-brand">
-            <span className="text-4xl">🏎️</span>
-            <h2 className="text-xl font-bold">Вы в гонке!</h2>
-            <p className="text-muted-foreground text-sm">Ожидайте старта от ведущего...</p>
-            <div className="space-y-2">
-              {game.roomState.players.map(p => (
-                <div key={p.id} className={cn(
-                  'flex items-center gap-2 p-2 rounded-lg',
-                  p.id === game.myPlayerId ? 'bg-primary/10 border border-primary/30' : 'bg-muted/50',
-                )}>
-                  <div className="w-6 h-6 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-xs font-bold">
-                    {p.name.charAt(0)}
-                  </div>
-                  <span className="text-sm font-medium">{p.name}</span>
-                  {p.id === game.myPlayerId && <span className="text-xs text-primary ml-auto">Вы</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-md w-full space-y-6"
+      >
+        <BrandHeader subtitle="Регистрация игроков перед стартом" />
 
-  // Admin created room
-  if (game.role === 'admin' && game.roomState) {
-    const shareUrl = `${window.location.origin}/#/lobby?code=${game.roomState.code}`;
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md w-full space-y-6">
-          <BrandHeader subtitle="Панель ведущего" compact />
-          <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">
-            <h2 className="text-xl font-bold text-center">Комната создана</h2>
-            
-            <div className="text-center p-4 rounded-xl bg-gradient-brand">
-              <p className="text-primary-foreground text-xs mb-1">Код комнаты</p>
-              <p className="text-4xl font-bold text-primary-foreground tracking-widest">{game.roomState.code}</p>
-            </div>
+        <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">
+          <p className="text-sm text-muted-foreground">
+            Введите имя и бизнес каждого участника. После этого нажмите `Начать игру`.
+          </p>
 
-            <div className="flex gap-2">
-              <input
-                readOnly
-                value={shareUrl}
-                className="flex-1 p-2 text-xs rounded-lg border bg-muted truncate"
-              />
-              <Button size="sm" onClick={() => navigator.clipboard.writeText(shareUrl)}>
-                📋
-              </Button>
-            </div>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Имя игрока"
+            maxLength={24}
+            className="w-full p-3 rounded-lg border bg-background focus:ring-2 focus:ring-primary outline-none"
+          />
+          <input
+            value={business}
+            onChange={(e) => setBusiness(e.target.value)}
+            placeholder="Бизнес игрока"
+            maxLength={60}
+            className="w-full p-3 rounded-lg border bg-background focus:ring-2 focus:ring-primary outline-none"
+          />
 
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Игроки ({game.roomState.players.length}/{MAX_PLAYERS}):</p>
-              {game.roomState.players.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-4">Ожидание подключений...</p>
-              )}
-              {game.roomState.players.map(p => (
-                <div key={p.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                  <div className="w-6 h-6 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-xs font-bold">
-                    {p.name.charAt(0)}
-                  </div>
-                  <span className="text-sm font-medium">{p.name}</span>
-                  <span className={cn(
-                    'ml-auto text-xs px-2 py-0.5 rounded-full',
-                    p.connected ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive',
-                  )}>
-                    {p.connected ? 'online' : 'offline'}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={handleAddPlayer}
+            disabled={!name.trim() || !business.trim() || players.length >= MAX_PLAYERS}
+          >
+            Добавить игрока
+          </Button>
 
-            {game.isDemo && game.roomState.players.length < MAX_PLAYERS && (
-              <Button variant="outline" size="sm" className="w-full" onClick={game.addDemoPlayers}>
-                🤖 Добавить игрока ({game.roomState.players.length}/{MAX_PLAYERS})
-              </Button>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Список игроков ({players.length}/{MAX_PLAYERS})</p>
+            {players.length === 0 && (
+              <p className="text-sm text-muted-foreground">Пока никто не добавлен</p>
             )}
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={() => navigate('/player-demo')}
-            >
-              👁️ Показать панель игрока (демо)
-            </Button>
-
-            <Button
-              variant="hero"
-              size="lg"
-              className="w-full"
-              onClick={handleStartGame}
-              disabled={game.roomState.players.length === 0}
-            >
-              🚦 Старт гонки
-            </Button>
+            {players.map((p, idx) => (
+              <div key={p.id} className="p-2 rounded-lg bg-muted/50 text-sm">
+                <span className="font-semibold">Игрок {idx + 1}: {p.name}</span>
+                <span className="text-muted-foreground"> — {p.business}</span>
+              </div>
+            ))}
           </div>
-        </motion.div>
-      </div>
-    );
-  }
 
-  // Selection / join screen
+          <Button
+            variant="hero"
+            size="xl"
+            className="w-full"
+            onClick={handleStartGame}
+            disabled={players.length === 0}
+          >
+            Начать игру
+          </Button>
+
+          <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/rules')}>
+            ← Далее назад
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default LobbyPage;
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useGame } from '@/contexts/GameContext';
+import { BrandHeader } from '@/components/game/BrandHeader';
+import { Button } from '@/components/ui/button';
+import { MAX_PLAYERS } from '@/config/stages';
+import { motion } from 'framer-motion';
+
+const LobbyPage = () => {
+  const navigate = useNavigate();
+  const game = useGame();
+  const [name, setName] = useState('');
+  const [business, setBusiness] = useState('');
+
+  useEffect(() => {
+    if (!game.roomState) game.createRoom();
+    if (game.role !== 'admin') game.setRole('admin');
+  }, [game]);
+
+  const players = game.roomState?.players ?? [];
+
+  const handleAddPlayer = () => {
+    if (!name.trim() || !business.trim()) return;
+    if (players.length >= MAX_PLAYERS) return;
+    game.adminAddPlayer(name.trim(), business.trim());
+    setName('');
+    setBusiness('');
+  };
+
+  const handleStartGame = () => {
+    game.startGame();
+    navigate('/admin');
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-md w-full space-y-6"
+      >
+        <BrandHeader subtitle="Регистрация игроков перед стартом" />
+
+        <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">
+          <p className="text-sm text-muted-foreground">
+            Введите имя и бизнес каждого участника. После этого нажмите `Начать игру`.
+          </p>
+
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Имя игрока"
+            maxLength={24}
+            className="w-full p-3 rounded-lg border bg-background focus:ring-2 focus:ring-primary outline-none"
+          />
+          <input
+            value={business}
+            onChange={(e) => setBusiness(e.target.value)}
+            placeholder="Бизнес игрока"
+            maxLength={60}
+            className="w-full p-3 rounded-lg border bg-background focus:ring-2 focus:ring-primary outline-none"
+          />
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={handleAddPlayer}
+            disabled={!name.trim() || !business.trim() || players.length >= MAX_PLAYERS}
+          >
+            Добавить игрока
+          </Button>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">
+              Список игроков ({players.length}/{MAX_PLAYERS})
+            </p>
+            {players.length === 0 && (
+              <p className="text-sm text-muted-foreground">Пока никто не добавлен</p>
+            )}
+            {players.map((p, idx) => (
+              <div key={p.id} className="p-2 rounded-lg bg-muted/50 text-sm">
+                <span className="font-semibold">Игрок {idx + 1}: {p.name}</span>
+                <span className="text-muted-foreground"> — {p.business}</span>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            variant="hero"
+            size="xl"
+            className="w-full"
+            onClick={handleStartGame}
+            disabled={players.length === 0}
+          >
+            Начать игру
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full"
+            onClick={() => navigate('/rules')}
+          >
+            ← Далее назад
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default LobbyPage;
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useGame } from '@/contexts/GameContext';
+import { BrandHeader } from '@/components/game/BrandHeader';
+import { Button } from '@/components/ui/button';
+import { MAX_PLAYERS } from '@/config/stages';
+import { motion } from 'framer-motion';
+
+const LobbyPage = () => {
+  const navigate = useNavigate();
+  const game = useGame();
+  const [name, setName] = useState('');
+  const [business, setBusiness] = useState('');
+
+  const handleStartGame = () => {
+    game.startGame();
+    navigate('/admin');
+  };
+
+  useEffect(() => {
+    if (!game.roomState) {
+      game.createRoom();
+    }
+    if (game.role !== 'admin') {
+      game.setRole('admin');
+    }
+  }, [game]);
+
+  const players = game.roomState?.players ?? [];
+
+  const handleAddPlayer = () => {
+    if (!name.trim() || !business.trim()) return;
+    if (players.length >= MAX_PLAYERS) return;
+    game.adminAddPlayer(name.trim(), business.trim());
+    setName('');
+    setBusiness('');
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full space-y-6">
-        <BrandHeader subtitle="Присоединиться к гонке" />
+        <BrandHeader subtitle="Регистрация игроков перед стартом" />
 
-        {mode === 'select' && (
-          <div className="space-y-3">
-            <Button variant="hero" size="xl" className="w-full" onClick={handleCreateRoom}>
-              🏁 Создать комнату (Ведущий)
-            </Button>
-            <Button variant="race" size="xl" className="w-full" onClick={() => setMode('player')}>
-              🏎️ Войти как игрок
-            </Button>
-            <Button variant="outline" size="lg" className="w-full" onClick={() => setMode('spectator')}>
-              👁️ Зритель (Spectator)
-            </Button>
+        <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">
+          <p className="text-sm text-muted-foreground">
+            Введите имя и бизнес каждого участника. После этого запускайте игру.
+          </p>
+
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Имя игрока"
+            maxLength={24}
+            className="w-full p-3 rounded-lg border bg-background focus:ring-2 focus:ring-primary outline-none"
+          />
+          <input
+            value={business}
+            onChange={(e) => setBusiness(e.target.value)}
+            placeholder="Бизнес игрока"
+            maxLength={60}
+            className="w-full p-3 rounded-lg border bg-background focus:ring-2 focus:ring-primary outline-none"
+          />
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={handleAddPlayer}
+            disabled={!name.trim() || !business.trim() || players.length >= MAX_PLAYERS}
+          >
+            Добавить игрока
+          </Button>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Список игроков ({players.length}/{MAX_PLAYERS})</p>
+            {players.length === 0 && (
+              <p className="text-sm text-muted-foreground">Пока никто не добавлен</p>
+            )}
+            {players.map((p, idx) => (
+              <div key={p.id} className="p-2 rounded-lg bg-muted/50 text-sm">
+                <span className="font-semibold">Игрок {idx + 1}: {p.name}</span>
+                <span className="text-muted-foreground"> — {p.business}</span>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            variant="hero"
+            size="xl"
+            className="w-full"
+            onClick={handleStartGame}
+            disabled={players.length === 0}
+          >
+            Начать игру
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/rules')}>
+            ← Далее назад
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default LobbyPage;
           </div>
         )}
 

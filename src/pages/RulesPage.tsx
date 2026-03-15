@@ -44,7 +44,7 @@ const RulesPage = () => {
         </div>
 
         <Button variant="hero" size="xl" className="w-full" onClick={() => navigate('/lobby')}>
-          Продолжить →
+          Далее →
         </Button>
       </motion.div>
     </div>

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { RoomState, Player, GamePhase, SpectatorMode, Role, PlayerStatus } from '@/types/game';
-import { INITIAL_SPEED, MAX_PLAYERS, STAGES } from '@/config/stages';
+import { INITIAL_SPEED, MAX_PLAYERS, ONE_SCREEN_MODE, STAGES } from '@/config/stages';
 import { connectSocket, isSocketAvailable, disconnectSocket } from '@/lib/socket';
 
 interface GameContextType {
@@ -27,6 +27,8 @@ interface GameContextType {
   setRole: (role: Role | null) => void;
   restartGame: () => void;
   addDemoPlayers: () => void;
+  adminAddPlayer: (name: string, business: string) => void;
+  adminSetPlayerAnswer: (playerId: string, stageIndex: number, answer: unknown) => void;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -42,15 +44,18 @@ function generateCode(): string {
 }
 
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 12);
+  // Make IDs deterministic-unique across rapid calls and sessions.
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 12)}`;
 }
 
 // Shared demo room storage via localStorage for cross-tab support
 function saveDemoRoom(room: RoomState) {
   try {
-    const rooms = JSON.parse(localStorage.getItem('demo_rooms') || '{}');
-    rooms[room.code] = room;
-    localStorage.setItem('demo_rooms', JSON.stringify(rooms));
+    // One-screen format: keep only one active room to avoid stale players.
+    localStorage.setItem('demo_rooms', JSON.stringify({ [room.code]: room }));
   } catch {}
 }
 
@@ -68,7 +73,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const isDemo = !isSocketAvailable();
+  // In one-screen mode we force local game state.
+  const isDemo = ONE_SCREEN_MODE || !isSocketAvailable();
 
   useEffect(() => {
     if (!isDemo) {
@@ -137,75 +143,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-  }, []);
-
-  const generateDemoAnswers = useCallback((stageIndex: number) => {
-    const stage = STAGES[stageIndex];
-    if (!stage) return;
-    
-    const demoAnswers: Record<string, unknown> = {};
-    
-    setRoomState(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        players: prev.players.map(p => {
-          let answer: unknown;
-          switch (stage.answerType) {
-            case 'single-choice':
-              if (stage.options) {
-                const opt = stage.options[Math.floor(Math.random() * stage.options.length)];
-                answer = opt.id;
-              }
-              break;
-            case 'slider':
-              answer = Math.floor(Math.random() * 100);
-              break;
-            case 'textarea':
-              const textAnswers = [
-                'Клиенты ценят качество и надёжность нашего продукта',
-                'Основная мотивация — экономия времени и удобство',
-                'Покупают из-за уникального сервиса и поддержки',
-                'Привлекает соотношение цены и качества',
-                'Нужен для решения конкретной бизнес-задачи',
-                'Рекомендации от коллег и партнёров',
-              ];
-              answer = textAnswers[Math.floor(Math.random() * textAnswers.length)];
-              break;
-            case 'choice-then-cards':
-              const type = Math.random() > 0.5 ? 'B2B' : 'B2C';
-              const demoB2B = {
-                'market': 'Корпоративный',
-                'why-business': 'Оптимизация процессов',
-                'industry': 'IT',
-                'business-size': '50-200 чел',
-                'relationship': 'Долгосрочно',
-                'decision-maker': 'Директор по развитию',
-                'personal-why': 'Карьерный рост',
-              };
-              const demoB2C = {
-                'market': 'Массовый',
-                'why': 'Для семьи',
-                'behavior': 'Рациональная',
-                'family': 'Семья 3-4 человека',
-                'children': '2 детей',
-                'location': 'Горожане',
-                'age': '30-45',
-                'gender': 'Не важно',
-                'economy': 'Средний доход',
-                'motive': 'Удобство',
-              };
-              answer = { type, params: type === 'B2B' ? demoB2B : demoB2C };
-              break;
-          }
-          return {
-            ...p,
-            status: 'submitted' as PlayerStatus,
-            answers: { ...p.answers, [stageIndex]: answer },
-          };
-        }),
-      };
-    });
   }, []);
 
   const startLocalTimer = useCallback(() => {
@@ -341,6 +278,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setRoomState(prev => {
       if (!prev) return prev;
       const currentStage = prev.currentStage;
+      const target = prev.players.find(p => p.id === playerId);
+      // One stage -> one speed decision per player.
+      if (!target || target.lastSpeedDelta?.[currentStage] !== undefined) {
+        return prev;
+      }
       const players = prev.players.map(p =>
         p.id === playerId ? { 
           ...p, 
@@ -425,8 +367,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       switch (action) {
         case 'start':
           startLocalTimer();
-          // Generate demo answers after a random delay
-          setTimeout(() => generateDemoAnswers(prev.currentStage), 1500 + Math.random() * 3000);
           return { ...prev, timer: { ...prev.timer, running: true } };
         case 'resume':
           startLocalTimer();
@@ -441,7 +381,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         default: return prev;
       }
     });
-  }, [isDemo, startLocalTimer, clearTimer, generateDemoAnswers]);
+  }, [isDemo, startLocalTimer, clearTimer]);
 
   const setSpectatorModeCtx = useCallback((mode: SpectatorMode, focusPlayerId?: string) => {
     if (!isDemo) {
@@ -493,13 +433,54 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, [isDemo]);
 
+  const adminAddPlayer = useCallback((name: string, business: string) => {
+    if (!isDemo) {
+      const socket = connectSocket();
+      socket?.emit('admin-add-player', { name, business });
+      return;
+    }
+    setRoomState(prev => {
+      if (!prev || prev.players.length >= MAX_PLAYERS) return prev;
+      const newPlayer: Player = {
+        id: generateId(),
+        name: name.trim(),
+        business: business.trim(),
+        speed: INITIAL_SPEED,
+        position: prev.players.length + 1,
+        status: 'waiting',
+        connected: true,
+        answers: {},
+      };
+      return { ...prev, players: [...prev.players, newPlayer] };
+    });
+  }, [isDemo]);
+
+  const adminSetPlayerAnswer = useCallback((playerId: string, stageIndex: number, answer: unknown) => {
+    if (!isDemo) {
+      const socket = connectSocket();
+      socket?.emit('admin-set-player-answer', { playerId, stageIndex, answer });
+      return;
+    }
+    setRoomState(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        players: prev.players.map(p =>
+          p.id === playerId
+            ? { ...p, status: 'submitted', answers: { ...p.answers, [stageIndex]: answer } }
+            : p
+        ),
+      };
+    });
+  }, [isDemo]);
+
   return (
     <GameContext.Provider value={{
       role, roomState, myPlayerId, error, connected, isDemo,
       createRoom, joinRoom, joinAsSpectator, startGame, submitAnswer,
       adjustSpeed, broadcastComment, setPlayerComment, nextStage, finishGame,
       timerControl, setSpectatorMode: setSpectatorModeCtx, expertContinue,
-      setRole, restartGame, addDemoPlayers,
+      setRole, restartGame, addDemoPlayers, adminAddPlayer, adminSetPlayerAnswer,
     }}>
       {children}
     </GameContext.Provider>

@@ -9,6 +9,7 @@ interface PlayerCardProps {
   showAnswer?: boolean;
   showControls?: boolean;
   showCommentInput?: boolean;
+  showIdentityLabels?: boolean;
   currentStage?: number;
   stageConfig?: StageConfig;
   onAdjustSpeed?: (delta: 10 | -10) => void;
@@ -84,7 +85,7 @@ function formatAnswer(answer: unknown, stageConfig?: StageConfig): string {
   return String(answer);
 }
 
-export function PlayerCard({ player, showAnswer, showControls, showCommentInput, currentStage, stageConfig, onAdjustSpeed, onPlayerComment }: PlayerCardProps) {
+export function PlayerCard({ player, showAnswer, showControls, showCommentInput, showIdentityLabels, currentStage, stageConfig, onAdjustSpeed, onPlayerComment }: PlayerCardProps) {
   const answer = currentStage !== undefined ? player.answers[currentStage] : undefined;
   const [localComment, setLocalComment] = useState(player.adminPlayerComment || '');
   
@@ -92,6 +93,7 @@ export function PlayerCard({ player, showAnswer, showControls, showCommentInput,
   const stageDelta = currentStage !== undefined && player.lastSpeedDelta 
     ? player.lastSpeedDelta[currentStage] 
     : undefined;
+  const alreadyScoredThisStage = stageDelta !== undefined;
 
   const handleSpeed = (delta: 10 | -10) => {
     onAdjustSpeed?.(delta);
@@ -105,14 +107,18 @@ export function PlayerCard({ player, showAnswer, showControls, showCommentInput,
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xl">🚕</span>
-          <span className="font-bold truncate max-w-[120px]">{player.name}</span>
+          <span className="font-bold truncate max-w-[220px]">
+            {showIdentityLabels ? `Имя игрока: ${player.name}` : player.name}
+          </span>
         </div>
         <SpeedBadge speed={player.speed} size="sm" />
       </div>
 
       {player.business && (
         <div className="px-2 py-1 rounded-lg bg-muted">
-          <span className="text-xs font-medium text-muted-foreground">📋 {player.business}</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {showIdentityLabels ? `Бизнес игрока: ${player.business}` : `📋 ${player.business}`}
+          </span>
         </div>
       )}
 
@@ -135,20 +141,31 @@ export function PlayerCard({ player, showAnswer, showControls, showCommentInput,
         </div>
       )}
 
-      {showAnswer && answer === undefined && player.status === 'waiting' && (
-        <div className="p-2 rounded-lg bg-muted/50 text-xs text-muted-foreground text-center italic">
-          Ещё не ответил...
-        </div>
-      )}
-
       {showControls && onAdjustSpeed && (
         <div className="flex gap-2">
-          <Button size="sm" variant="success" onClick={() => handleSpeed(10)} className="flex-1">
+          <Button
+            size="sm"
+            variant="success"
+            onClick={() => handleSpeed(10)}
+            className="flex-1"
+            disabled={alreadyScoredThisStage}
+          >
             +10 км/ч
           </Button>
-          <Button size="sm" variant="destructive" onClick={() => handleSpeed(-10)} className="flex-1">
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => handleSpeed(-10)}
+            className="flex-1"
+            disabled={alreadyScoredThisStage}
+          >
             -10 км/ч
           </Button>
+        </div>
+      )}
+      {showControls && alreadyScoredThisStage && (
+        <div className="text-[11px] text-muted-foreground text-center">
+          Оценка на этом этапе уже выставлена
         </div>
       )}
 

@@ -60,7 +60,7 @@ const TitlePage = () => {
             className="w-full"
             onClick={() => navigate('/rules')}
           >
-            🔑 Включить зажигание
+            Далее →
           </Button>
         </div>
       </motion.div>
