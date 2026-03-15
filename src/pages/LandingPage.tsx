@@ -87,7 +87,7 @@ const LandingPage = () => {
               variant="hero"
               size="xl"
               className="w-[260px] justify-center bg-white text-[#2A168F] hover:bg-white/90 font-bold"
-              onClick={() => navigate('/game')}
+              onClick={() => navigate('/access')}
             >
               <span className="text-2xl mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Начать игру <ArrowRight className="w-5 h-5 ml-1" />
             </Button>
@@ -96,6 +96,18 @@ const LandingPage = () => {
             }}>
               Как это работает?
             </Button>
+          </motion.div>
+
+          <motion.div
+            className="flex justify-center mt-3"
+            initial="hidden" animate="visible" variants={fadeUp} custom={3.5}
+          >
+            <button
+              onClick={() => navigate('/instructions')}
+              className="text-white/60 hover:text-white text-sm underline underline-offset-4 transition-colors"
+            >
+              Инструкция для ведущего
+            </button>
           </motion.div>
 
           {/* Speed display */}
@@ -250,7 +262,7 @@ const LandingPage = () => {
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Готовы к заезду?</h2>
           <p className="text-muted-foreground mb-8">Запустите игру прямо сейчас — нужен только браузер</p>
-          <Button variant="hero" size="xl" className="w-[260px] justify-center" onClick={() => navigate('/game')}>
+          <Button variant="hero" size="xl" className="w-[260px] justify-center" onClick={() => navigate('/access')}>
             <span className="text-2xl mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Начать игру <ChevronRight className="w-5 h-5 ml-1" />
           </Button>
         </motion.div>

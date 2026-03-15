@@ -4,10 +4,17 @@ import { useGame } from '@/contexts/GameContext';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { Button } from '@/components/ui/button';
 import { MAX_PLAYERS } from '@/config/stages';
+import { isAuthorized } from '@/config/accessCodes';
 import { motion } from 'framer-motion';
 
 const LobbyOneScreenPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAuthorized()) navigate('/access', { replace: true });
+  }, [navigate]);
+
+  if (!isAuthorized()) return null;
   const game = useGame();
   const [name, setName] = useState('');
   const [business, setBusiness] = useState('');

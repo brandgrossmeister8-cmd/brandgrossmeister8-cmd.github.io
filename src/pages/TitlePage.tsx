@@ -1,10 +1,20 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { GAME_TITLE, BRAND_NAME } from '@/config/stages';
+import { isAuthorized, getHostName, getSavedCode } from '@/config/accessCodes';
 import { motion } from 'framer-motion';
 
 const TitlePage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAuthorized()) navigate('/access', { replace: true });
+  }, [navigate]);
+
+  if (!isAuthorized()) return null;
+
+  const hostName = getSavedCode() ? getHostName(getSavedCode()!) : '';
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#2A168F] relative overflow-hidden">
@@ -32,6 +42,9 @@ const TitlePage = () => {
         <h1 className="text-2xl font-bold text-white tracking-wide">
           {BRAND_NAME}
         </h1>
+        {hostName && (
+          <p className="text-white/60 text-sm">Ведущий: {hostName}</p>
+        )}
 
         {/* Dashboard frame - blue */}
         <div className="bg-[#1E0F6E] rounded-2xl border border-white/20 p-8 shadow-2xl w-full max-w-lg">

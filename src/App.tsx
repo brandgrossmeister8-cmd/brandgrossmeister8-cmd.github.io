@@ -12,6 +12,9 @@ import PlayerGamePage from "./pages/PlayerGamePage";
 import PlayerPanelDemoPage from "./pages/PlayerPanelDemoPage";
 import AdminOneScreenPage from "./pages/AdminOneScreenPage";
 import SpectatorViewPage from "./pages/SpectatorViewPage";
+import AccessPage from "./pages/AccessPage";
+import AdminCodesPage from "./pages/AdminCodesPage";
+import InstructionsPage from "./pages/InstructionsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +28,7 @@ const App = () => (
         <HashRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/access" element={<AccessPage />} />
             <Route path="/game" element={<TitlePage />} />
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/lobby" element={<LobbyOneScreenPage />} />
@@ -32,6 +36,8 @@ const App = () => (
             <Route path="/player-demo" element={<PlayerPanelDemoPage />} />
             <Route path="/admin" element={<AdminOneScreenPage />} />
             <Route path="/spectator" element={<SpectatorViewPage />} />
+            <Route path="/admin-codes" element={<AdminCodesPage />} />
+            <Route path="/instructions" element={<InstructionsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>

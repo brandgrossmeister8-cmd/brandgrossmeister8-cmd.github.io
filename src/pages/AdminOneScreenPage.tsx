@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
+import { isAuthorized } from '@/config/accessCodes';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { RaceTrack } from '@/components/game/RaceTrack';
 import { TimerDisplay } from '@/components/game/TimerDisplay';
@@ -43,6 +44,10 @@ const AdminOneScreenPage = () => {
   const navigate = useNavigate();
   const game = useGame();
   const { roomState } = game;
+
+  useEffect(() => {
+    if (!isAuthorized()) navigate('/access', { replace: true });
+  }, [navigate]);
   const [showJournalBlock, setShowJournalBlock] = useState(true);
   const [showQuestionBlock, setShowQuestionBlock] = useState(true);
   const [showLeaderBlock, setShowLeaderBlock] = useState(true);
