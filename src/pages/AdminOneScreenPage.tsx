@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { RaceTrack } from '@/components/game/RaceTrack';
@@ -39,6 +40,7 @@ function CollapsibleBlock({
 }
 
 const AdminOneScreenPage = () => {
+  const navigate = useNavigate();
   const game = useGame();
   const { roomState } = game;
   const [showJournalBlock, setShowJournalBlock] = useState(true);
@@ -50,13 +52,27 @@ const AdminOneScreenPage = () => {
   const [selectedCardLabel, setSelectedCardLabel] = useState<string>('');
   const [savedPlayers, setSavedPlayers] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    setPreviewAudienceType('');
+    setDraftAnswers({});
+    setSelectedCardLabel('');
+    setSavedPlayers({});
+  }, [roomState?.currentStage]);
+
   if (!roomState) return <div className="min-h-screen flex items-center justify-center bg-background">Загрузка...</div>;
+
+  const finalCardTone = (speed: number) => {
+    if (speed > 100) return 'bg-green-100 text-green-950 border-green-400';
+    if (speed > 60) return 'bg-yellow-100 text-yellow-950 border-yellow-400';
+    if (speed === 60) return 'bg-white text-black border-border';
+    return 'bg-red-100 text-red-950 border-red-400';
+  };
 
   if (roomState.phase === 'final') {
     const sorted = [...roomState.players].sort((a, b) => b.speed - a.speed);
     return (
       <div className="min-h-screen bg-background px-4 py-6">
-        <BrandHeader subtitle="Итоги игры" compact />
+        <BrandHeader subtitle="ИТОГИ ИГРЫ" compact />
         <div className="w-full mx-auto mt-4 space-y-4">
           <RaceTrack players={sorted} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -69,7 +85,7 @@ const AdminOneScreenPage = () => {
               </div>
             ))}
           </div>
-          <Button variant="hero" className="w-full" onClick={game.restartGame}>Начать новую игру</Button>
+          <Button variant="hero" className="w-full" onClick={() => { game.restartGame(); navigate('/'); }}>Начать новую игру</Button>
         </div>
       </div>
     );
@@ -77,13 +93,6 @@ const AdminOneScreenPage = () => {
 
   const stage = roomState.currentStage >= 0 ? STAGES[roomState.currentStage] : null;
   if (!stage) return <div className="min-h-screen flex items-center justify-center bg-background">Нет активного этапа</div>;
-
-  useEffect(() => {
-    setPreviewAudienceType('');
-    setDraftAnswers({});
-    setSelectedCardLabel('');
-    setSavedPlayers({});
-  }, [roomState.currentStage]);
 
   const saveAnswer = (playerId: string) => {
     const v = draftAnswers[playerId];
@@ -99,12 +108,6 @@ const AdminOneScreenPage = () => {
     }
     game.adminSetPlayerAnswer(playerId, roomState.currentStage, answer);
     setSavedPlayers(prev => ({ ...prev, [playerId]: true }));
-  };
-
-  const finalCardTone = (speed: number) => {
-    if (speed === 60) return 'bg-white text-black border-border';
-    if (speed > 60) return 'bg-green-100 text-green-950 border-green-300';
-    return 'bg-red-100 text-red-950 border-red-300';
   };
 
   const explainCard = (label: string) => {
@@ -178,7 +181,7 @@ const AdminOneScreenPage = () => {
 
           {stage.answerType === 'textarea' && (
             <div className="rounded-lg border bg-background px-3 py-2 text-sm">
-              Игрок формулирует текстовый ответ, ведущий фиксирует его в блоке ниже.
+              Введите ответ
             </div>
           )}
 
@@ -227,6 +230,7 @@ const AdminOneScreenPage = () => {
                   showAnswer
                   showControls
                   showIdentityLabels
+                  isSaved={!!savedPlayers[player.id]}
                   currentStage={roomState.currentStage}
                   stageConfig={stage}
                   onAdjustSpeed={(delta) => game.adjustSpeed(player.id, delta)}

@@ -5,7 +5,7 @@ import { BrandHeader } from '@/components/game/BrandHeader';
 import { BRAND_NAME, GAME_TITLE, STAGES } from '@/config/stages';
 import { motion } from 'framer-motion';
 import {
-  Trophy, Users, Monitor, Timer, Zap, Target,
+  Trophy, Users, Monitor, Timer, Target,
   ChevronRight, MapPin, Gauge, Flag, ArrowRight
 } from 'lucide-react';
 
@@ -24,7 +24,6 @@ const LandingPage = () => {
     { icon: Users, title: 'До 6 игроков', desc: 'Командная работа в формате Zoom-тренинга' },
     { icon: Monitor, title: 'Внешний вид', desc: 'Общий экран для трансляции в Zoom' },
     { icon: Timer, title: 'Таймеры этапов', desc: 'Контроль времени на каждый этап' },
-    { icon: Zap, title: 'Синхронизация', desc: 'Мгновенная синхронизация' },
     { icon: Target, title: '6 этапов', desc: 'От ассортимента до креативности' },
     { icon: Trophy, title: 'Рейтинг', desc: 'Живой лидерборд с анимациями обгонов' },
   ];
@@ -200,35 +199,6 @@ const LandingPage = () => {
                 </div>
               </motion.div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <motion.div className="text-center mb-16" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Как играть</h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { step: '01', title: 'Комната для игры', desc: 'Ведущий создаёт игровую комнату и передает код всем участникам. До 6 игроков.' },
-              { step: '02', title: 'Этапы игры', desc: 'Каждый город — маркетинговый вопрос. Ведущий оценивает ответы: +10 или −10 км/ч.' },
-              { step: '03', title: 'Окончание игры', desc: 'Финальная скорость = качество маркетинговой стратегии. 120 км/ч — идеальный результат.' },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                className="text-center"
-                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
-              >
-                <div className="w-16 h-16 rounded-2xl bg-gradient-brand mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-primary-foreground">{item.step}</span>
-                </div>
-                <h3 className="font-bold text-lg mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>

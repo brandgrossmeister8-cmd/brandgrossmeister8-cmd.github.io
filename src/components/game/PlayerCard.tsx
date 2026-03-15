@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Player, PlayerStatus, StageConfig } from '@/types/game';
 import { SpeedBadge } from './SpeedBadge';
 import { Button } from '@/components/ui/button';
@@ -12,25 +11,10 @@ interface PlayerCardProps {
   showIdentityLabels?: boolean;
   currentStage?: number;
   stageConfig?: StageConfig;
+  isSaved?: boolean;
   onAdjustSpeed?: (delta: 10 | -10) => void;
   onPlayerComment?: (comment: string) => void;
 }
-
-const STATUS_LABELS: Record<PlayerStatus, string> = {
-  waiting: 'Ожидает',
-  submitted: 'Ответил',
-  decided: 'Решение принято',
-  comment: 'Комментарий',
-  next: 'Далее',
-};
-
-const STATUS_COLORS: Record<PlayerStatus, string> = {
-  waiting: 'bg-muted text-muted-foreground',
-  submitted: 'bg-secondary/20 text-secondary',
-  decided: 'bg-success/20 text-success',
-  comment: 'bg-spectator/20 text-spectator-foreground',
-  next: 'bg-primary/20 text-primary',
-};
 
 function formatAnswer(answer: unknown, stageConfig?: StageConfig): string {
   if (typeof answer === 'string') return answer;
@@ -43,13 +27,11 @@ function formatAnswer(answer: unknown, stageConfig?: StageConfig): string {
   }
   if (typeof answer === 'object' && answer !== null) {
     const obj = answer as Record<string, unknown>;
-    
-    // Для choice-then-cards (Цалово): показываем тип + заполненные параметры
+
     if (obj.type && stageConfig?.answerType === 'choice-then-cards') {
       const data = (obj.params || obj.fields) as Record<string, string> | undefined;
       const choices = stageConfig.subChoices?.[obj.type as string];
-      
-      // Маппинг старых id на новые для совместимости
+
       const oldToNewMap: Record<string, string> = {
         'sphere': 'industry',
         'size': 'business-size',
@@ -63,37 +45,49 @@ function formatAnswer(answer: unknown, stageConfig?: StageConfig): string {
         'custom1': 'custom1',
         'custom2': 'custom2',
       };
-      
+
       if (data && choices) {
         const lines = Object.entries(data)
           .filter(([_, v]) => v && String(v).trim())
           .map(([key, value]) => {
-            // Пробуем найти по новому id или по старому через маппинг
             const newKey = oldToNewMap[key] || key;
             const choice = choices.find((c: any) => c.id === newKey || c.id === key);
             const label = choice?.label || key;
             return `${label}: ${value}`;
           });
-        
+
         const filledCount = lines.length;
         return `${obj.type} (${filledCount})\n${lines.join('\n')}`;
       }
     }
-    
+
     return JSON.stringify(answer, null, 2);
   }
   return String(answer);
 }
 
-export function PlayerCard({ player, showAnswer, showControls, showCommentInput, showIdentityLabels, currentStage, stageConfig, onAdjustSpeed, onPlayerComment }: PlayerCardProps) {
+export function PlayerCard({ player, showAnswer, showControls, showCommentInput, showIdentityLabels, currentStage, stageConfig, isSaved, onAdjustSpeed, onPlayerComment }: PlayerCardProps) {
   const answer = currentStage !== undefined ? player.answers[currentStage] : undefined;
-  const [localComment, setLocalComment] = useState(player.adminPlayerComment || '');
-  
+
   // Получаем решение админа для текущего этапа
-  const stageDelta = currentStage !== undefined && player.lastSpeedDelta 
-    ? player.lastSpeedDelta[currentStage] 
+  const stageDelta = currentStage !== undefined && player.lastSpeedDelta
+    ? player.lastSpeedDelta[currentStage]
     : undefined;
   const alreadyScoredThisStage = stageDelta !== undefined;
+
+  // Определяем метку статуса
+  let statusLabel: string;
+  let statusColor: string;
+  if (alreadyScoredThisStage) {
+    statusLabel = 'Оценка выполнена';
+    statusColor = 'bg-success/20 text-success';
+  } else if (isSaved) {
+    statusLabel = 'Ответ принят';
+    statusColor = 'bg-secondary/20 text-secondary';
+  } else {
+    statusLabel = 'Ожидает';
+    statusColor = 'bg-muted text-muted-foreground';
+  }
 
   const handleSpeed = (delta: 10 | -10) => {
     onAdjustSpeed?.(delta);
@@ -120,8 +114,8 @@ export function PlayerCard({ player, showAnswer, showControls, showCommentInput,
       </div>
 
       <div className="flex items-center justify-between">
-        <span className={cn('text-xs px-2 py-1 rounded-full font-medium', STATUS_COLORS[player.status])}>
-          {STATUS_LABELS[player.status]}
+        <span className={cn('text-xs px-2 py-1 rounded-full font-medium', statusColor)}>
+          {statusLabel}
         </span>
         <span className="text-xs text-muted-foreground">#{player.position}</span>
       </div>
@@ -145,7 +139,7 @@ export function PlayerCard({ player, showAnswer, showControls, showCommentInput,
             variant="success"
             onClick={() => handleSpeed(10)}
             className="flex-1"
-            disabled={alreadyScoredThisStage}
+            disabled={alreadyScoredThisStage || !isSaved}
           >
             +10 км/ч
           </Button>
@@ -154,23 +148,18 @@ export function PlayerCard({ player, showAnswer, showControls, showCommentInput,
             variant="destructive"
             onClick={() => handleSpeed(-10)}
             className="flex-1"
-            disabled={alreadyScoredThisStage}
+            disabled={alreadyScoredThisStage || !isSaved}
           >
             -10 км/ч
           </Button>
-        </div>
-      )}
-      {showControls && alreadyScoredThisStage && (
-        <div className="text-[11px] text-muted-foreground text-center">
-          Оценка на этом этапе уже выставлена
         </div>
       )}
 
       {showCommentInput && onPlayerComment && (
         <div className="space-y-2 pt-1 border-t border-border/50">
           <textarea
-            value={localComment}
-            onChange={e => setLocalComment(e.target.value)}
+            value={''}
+            onChange={() => {}}
             placeholder={`Комментарий для ${player.name}...`}
             rows={2}
             className="w-full p-2 rounded-lg border bg-background resize-none focus:ring-2 focus:ring-primary outline-none text-xs"
@@ -179,16 +168,10 @@ export function PlayerCard({ player, showAnswer, showControls, showCommentInput,
             size="sm"
             variant="outline"
             className="w-full text-xs"
-            onClick={() => onPlayerComment(localComment)}
-            disabled={!localComment.trim()}
+            onClick={() => onPlayerComment('')}
           >
-            💬 Сохранить комментарий
+            Сохранить комментарий
           </Button>
-          {player.adminPlayerComment && (
-            <div className="p-2 rounded-lg bg-primary/5 border border-primary/20 text-xs">
-              <span className="font-medium text-primary">Комментарий:</span> {player.adminPlayerComment}
-            </div>
-          )}
         </div>
       )}
     </div>
