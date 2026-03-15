@@ -37,7 +37,7 @@ const LobbyPage = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full space-y-6"
+        className="w-full space-y-6"
       >
         <BrandHeader subtitle="Регистрация игроков перед стартом" />
 
@@ -143,7 +143,7 @@ const LobbyPage = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full space-y-6"
+        className="w-full space-y-6"
       >
         <BrandHeader subtitle="Регистрация игроков перед стартом" />
 
@@ -257,7 +257,7 @@ const LobbyPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full space-y-6">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-6">
         <BrandHeader subtitle="Регистрация игроков перед стартом" />
 
         <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">

@@ -4,8 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { BRAND_NAME, GAME_TITLE, STAGES } from '@/config/stages';
 import { motion } from 'framer-motion';
-import { 
-  Trophy, Users, Monitor, Timer, Zap, Target, 
+import {
+  Trophy, Users, Monitor, Timer, Zap, Target,
   ChevronRight, MapPin, Gauge, Flag, ArrowRight
 } from 'lucide-react';
 
@@ -40,14 +40,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Hero */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-dark">
-        <motion.p
-          className="absolute top-6 left-0 right-0 z-20 text-3xl md:text-4xl text-primary-foreground font-black tracking-wide text-center px-4"
-          initial="hidden" animate="visible" variants={fadeUp} custom={0}
-        >
-          <span>{BRAND_NAME.toUpperCase()}</span>
-        </motion.p>
-
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#2A168F]">
         {/* Track lines */}
         <div className="absolute inset-0 pointer-events-none">
           {[20, 35, 50, 65, 80].map((top, i) => (
@@ -59,22 +52,29 @@ const LandingPage = () => {
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center pt-16">
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#2A168F] bg-[#2A168F] text-white text-sm mb-8">
+          <motion.p
+            className="text-3xl md:text-4xl font-black tracking-wide text-white mb-4 -mt-8"
+            initial="hidden" animate="visible" variants={fadeUp} custom={0}
+          >
+            {BRAND_NAME.toUpperCase()}
+          </motion.p>
+
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0.5}>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 text-white text-sm mb-6">
               <Gauge className="w-4 h-4" />
               Интерактивная бизнес-игра
             </div>
           </motion.div>
 
           <motion.h1
-            className="text-5xl md:text-7xl font-bold text-primary-foreground mb-4 tracking-tight"
+            className="text-5xl md:text-7xl font-bold mb-4 tracking-tight"
             initial="hidden" animate="visible" variants={fadeUp} custom={1}
           >
             <span className="text-white">{GAME_TITLE}</span>
           </motion.h1>
 
           <motion.p
-            className="text-lg md:text-xl text-white max-w-2xl mx-auto mb-4"
+            className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8"
             initial="hidden" animate="visible" variants={fadeUp} custom={2}
           >
             Тренинг на основе технологии системного продвижения Ии Имшинецкой.
@@ -87,12 +87,12 @@ const LandingPage = () => {
             <Button
               variant="hero"
               size="xl"
-              className="w-[260px] justify-center bg-[#2A168F] hover:bg-[#6838CE] text-white"
+              className="w-[260px] justify-center bg-white text-[#2A168F] hover:bg-white/90 font-bold"
               onClick={() => navigate('/game')}
             >
-              🚕 Начать игру <ArrowRight className="w-5 h-5 ml-1" />
+              <span className="text-2xl mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Начать игру <ArrowRight className="w-5 h-5 ml-1" />
             </Button>
-            <Button variant="outline" size="xl" className="w-[260px] justify-center border-[#A977FA]/50 text-[#A977FA] hover:bg-[#A977FA]/10" onClick={() => {
+            <Button variant="outline" size="xl" className="w-[260px] justify-center border-white/50 text-white bg-white/10" onClick={() => {
               document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
             }}>
               Как это работает?
@@ -106,12 +106,12 @@ const LandingPage = () => {
           >
             <div className="flex flex-col items-center">
               <span className="text-6xl font-bold text-gradient-brand">60</span>
-              <span className="text-xs text-muted-foreground mt-1">км/ч старт</span>
+              <span className="text-xs text-white/60 mt-1">км/ч старт</span>
             </div>
-            <div className="w-24 h-px bg-gradient-to-r from-primary to-secondary" />
+            <div className="w-24 h-px bg-gradient-to-r from-white/20 to-white/60" />
             <div className="flex flex-col items-center">
               <span className="text-6xl font-bold text-spectator">120</span>
-              <span className="text-xs text-muted-foreground mt-1">км/ч макс</span>
+              <span className="text-xs text-white/60 mt-1">км/ч макс</span>
             </div>
           </motion.div>
         </div>
@@ -281,7 +281,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Готовы к заезду?</h2>
           <p className="text-muted-foreground mb-8">Запустите игру прямо сейчас — нужен только браузер</p>
           <Button variant="hero" size="xl" className="w-[260px] justify-center" onClick={() => navigate('/game')}>
-            🚕 Начать игру <ChevronRight className="w-5 h-5 ml-1" />
+            <span className="text-2xl mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Начать игру <ChevronRight className="w-5 h-5 ml-1" />
           </Button>
         </motion.div>
       </section>

@@ -22,7 +22,7 @@ const RulesPage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="max-w-lg w-full space-y-6"
+        className="w-full space-y-6"
       >
         <BrandHeader subtitle="Правила игры" />
 

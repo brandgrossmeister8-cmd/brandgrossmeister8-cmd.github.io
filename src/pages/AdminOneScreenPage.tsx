@@ -6,14 +6,41 @@ import { TimerDisplay } from '@/components/game/TimerDisplay';
 import { PlayerCard } from '@/components/game/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { STAGES, getInterpretation } from '@/config/stages';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 type ChoiceDraft = { type: string; details?: string; fields?: Record<string, string> };
 type Draft = string | number | ChoiceDraft | null;
 
+/** Collapsible section with arrow toggle */
+function CollapsibleBlock({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border bg-card overflow-hidden">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors"
+      >
+        <h2 className="font-bold text-lg">{title}</h2>
+        {open ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+      </button>
+      {open && <div className="px-4 pb-4 space-y-3">{children}</div>}
+    </div>
+  );
+}
+
 const AdminOneScreenPage = () => {
   const game = useGame();
   const { roomState } = game;
-  const [adminOpen, setAdminOpen] = useState(false);
   const [showJournalBlock, setShowJournalBlock] = useState(true);
   const [showQuestionBlock, setShowQuestionBlock] = useState(true);
   const [showLeaderBlock, setShowLeaderBlock] = useState(true);
@@ -21,6 +48,7 @@ const AdminOneScreenPage = () => {
   const [stageSliderPreview, setStageSliderPreview] = useState(50);
   const [previewAudienceType, setPreviewAudienceType] = useState<string>('');
   const [selectedCardLabel, setSelectedCardLabel] = useState<string>('');
+  const [savedPlayers, setSavedPlayers] = useState<Record<string, boolean>>({});
 
   if (!roomState) return <div className="min-h-screen flex items-center justify-center bg-background">Загрузка...</div>;
 
@@ -29,7 +57,7 @@ const AdminOneScreenPage = () => {
     return (
       <div className="min-h-screen bg-background px-4 py-6">
         <BrandHeader subtitle="Итоги игры" compact />
-        <div className="max-w-5xl mx-auto mt-4 space-y-4">
+        <div className="w-full mx-auto mt-4 space-y-4">
           <RaceTrack players={sorted} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {sorted.map((p) => (
@@ -54,6 +82,7 @@ const AdminOneScreenPage = () => {
     setPreviewAudienceType('');
     setDraftAnswers({});
     setSelectedCardLabel('');
+    setSavedPlayers({});
   }, [roomState.currentStage]);
 
   const saveAnswer = (playerId: string) => {
@@ -69,6 +98,7 @@ const AdminOneScreenPage = () => {
       answer = { type: data.type, params };
     }
     game.adminSetPlayerAnswer(playerId, roomState.currentStage, answer);
+    setSavedPlayers(prev => ({ ...prev, [playerId]: true }));
   };
 
   const finalCardTone = (speed: number) => {
@@ -79,71 +109,43 @@ const AdminOneScreenPage = () => {
 
   const explainCard = (label: string) => {
     const t = label.toLowerCase();
-    if (t.includes('товар')) return 'Товар: конкретный продукт, который клиент получает в измеримом виде.';
-    if (t.includes('услуга')) return 'Услуга: действие/работа, которую вы выполняете для клиента.';
-    if (t.includes('информация')) return 'Информация: знания, методики или контент, который клиент применяет сам.';
-    if (t.includes('технолог')) return 'Технология: воспроизводимый процесс с понятными шагами результата.';
-    if (t.includes('сервис')) return 'Сервис: сопровождение и удобство использования основного предложения.';
-    if (t.includes('сырье')) return 'Сырье: базовый материал или основа, из которой создается конечный продукт.';
-    if (t.includes('зовем всех')) return 'Массовая стратегия охвата: широкий поток, но ниже точность попадания в ЦА.';
-    if (t.includes('приходят сами')) return 'Пассивная стратегия: зависимость от сарафана и случайного входящего потока.';
-    if (t.includes('только тех')) return 'Целевая стратегия: фокус на клиентах, которым продукт нужен прямо сейчас.';
-    return 'Расшифровка карточки: этот вариант отражает один из рабочих подходов в текущем этапе.';
+    if (t.includes('товар')) return 'Товар — это конкретный физический или цифровой продукт, который клиент получает в измеримом виде. Примеры: одежда, электроника, программное обеспечение. Ключевое отличие — клиент может его потрогать, измерить, сравнить с аналогами.';
+    if (t.includes('услуга')) return 'Услуга — это действие или работа, которую вы выполняете для клиента. Примеры: консалтинг, ремонт, обучение. Особенность — результат неотделим от процесса, клиент оценивает качество в момент получения.';
+    if (t.includes('информация')) return 'Информация — это знания, методики, данные или контент, который клиент применяет самостоятельно. Примеры: курсы, аналитические отчёты, базы данных. Ценность — в уникальности и применимости знаний.';
+    if (t.includes('технолог')) return 'Технология — это воспроизводимый процесс с понятными шагами и предсказуемым результатом. Примеры: франшиза, лицензия на метод, SaaS-платформа. Клиент покупает не продукт, а способ достижения результата.';
+    if (t.includes('сервис')) return 'Сервис — это сопровождение и удобство использования основного предложения. Примеры: техподдержка, доставка, гарантийное обслуживание. Сервис повышает ценность основного продукта и формирует лояльность.';
+    if (t.includes('сырье')) return 'Сырье — это базовый материал или компонент, из которого создаётся конечный продукт. Примеры: ткани для пошива, ингредиенты для производства, заготовки. Конкурентное преимущество — в качестве, стабильности поставок и цене.';
+    if (t.includes('зовем всех')) return 'Массовая стратегия охвата: широкий поток, но ниже точность попадания в целевую аудиторию. Большие бюджеты на рекламу, высокая стоимость привлечения одного клиента.';
+    if (t.includes('приходят сами')) return 'Пассивная стратегия: зависимость от сарафанного радио и случайного входящего потока. Низкие затраты, но непредсказуемый результат и сложность масштабирования.';
+    if (t.includes('только тех')) return 'Целевая стратегия: фокус на клиентах, которым продукт нужен прямо сейчас. Точный таргетинг, высокая конверсия, оптимальное использование бюджета.';
+    return 'Этот вариант отражает один из рабочих подходов в текущем этапе маркетинговой стратегии.';
   };
 
   return (
     <div className="min-h-screen bg-background px-4 py-4">
       <BrandHeader subtitle={`ЭТАП ${roomState.currentStage + 1}. ГОРОД ${stage.cityName.toUpperCase()}`} compact />
-      <div className="max-w-6xl mx-auto mt-3 space-y-4">
-        <div className="rounded-xl border bg-card p-3 space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground">Видимость блоков</p>
+      <div className="w-full mx-auto mt-3 space-y-4">
+
+        {/* БЛОК 1: Бортовой журнал */}
+        <CollapsibleBlock title="БОРТОВОЙ ЖУРНАЛ" open={showJournalBlock} onToggle={() => setShowJournalBlock(v => !v)}>
+          <div className="flex flex-wrap items-center gap-3">
+            <TimerDisplay remaining={roomState.timer.remaining} total={roomState.timer.total} running={roomState.timer.running} className="min-w-[170px]" />
+          </div>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant={showJournalBlock ? 'default' : 'outline'} onClick={() => setShowJournalBlock((v) => !v)}>
-              {showJournalBlock ? 'Скрыть' : 'Показать'} Блок 1
+            {!roomState.timer.running && <Button size="sm" variant="success" onClick={() => game.timerControl('start')}>▶ Включить таймер</Button>}
+            {roomState.timer.running && <Button size="sm" variant="outline" onClick={() => game.timerControl('pause')}>⏸ Пауза</Button>}
+            <Button size="sm" variant="outline" onClick={() => game.timerControl('restart')}>🔄 Сброс</Button>
+            <Button size="sm" variant="success" onClick={game.nextStage} disabled={roomState.currentStage >= STAGES.length - 1}>
+              ➡ Следующий этап
             </Button>
-            <Button size="sm" variant={showQuestionBlock ? 'default' : 'outline'} onClick={() => setShowQuestionBlock((v) => !v)}>
-              {showQuestionBlock ? 'Скрыть' : 'Показать'} Блок 2
-            </Button>
-            <Button size="sm" variant={showLeaderBlock ? 'default' : 'outline'} onClick={() => setShowLeaderBlock((v) => !v)}>
-              {showLeaderBlock ? 'Скрыть' : 'Показать'} Блок 3
-            </Button>
+            <Button size="sm" variant="destructive" onClick={game.finishGame}>🏁 Завершить игру</Button>
           </div>
-        </div>
+          <RaceTrack players={roomState.players} compact />
+        </CollapsibleBlock>
 
-        {showJournalBlock && (
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex-1">
-                <h2 className="font-bold text-xl">БОРТОВОЙ ЖУРНАЛ</h2>
-              </div>
-              <TimerDisplay remaining={roomState.timer.remaining} total={roomState.timer.total} running={roomState.timer.running} className="min-w-[170px]" />
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {!roomState.timer.running && <Button size="sm" variant="success" onClick={() => game.timerControl('start')}>▶ Включить таймер</Button>}
-              {roomState.timer.running && <Button size="sm" variant="outline" onClick={() => game.timerControl('pause')}>⏸ Пауза</Button>}
-              <Button size="sm" variant="outline" onClick={() => game.timerControl('restart')}>🔄 Сброс</Button>
-              <Button
-                size="sm"
-                variant="success"
-                onClick={game.nextStage}
-                disabled={roomState.currentStage >= STAGES.length - 1}
-              >
-                ➡ Следующий этап
-              </Button>
-              <Button size="sm" variant="destructive" onClick={game.finishGame}>🏁 Завершить игру</Button>
-            </div>
-          </div>
-        )}
-
-        <RaceTrack players={roomState.players} compact />
-
-        {showQuestionBlock && (
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <h2 className="font-bold text-lg">
-              Блок 2: {stage.cityName} и вопрос
-            </h2>
-            <p className="text-sm font-medium">{stage.question}</p>
+        {/* БЛОК 2: Город + вопрос + карточки */}
+        <CollapsibleBlock title={stage.cityName.toUpperCase()} open={showQuestionBlock} onToggle={() => setShowQuestionBlock(v => !v)}>
+          <p className="text-sm font-medium">{stage.question}</p>
 
           {stage.answerType === 'single-choice' && stage.options && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -151,10 +153,10 @@ const AdminOneScreenPage = () => {
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => setSelectedCardLabel(opt.label)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium text-left transition-colors ${
+                  onClick={() => setSelectedCardLabel(prev => prev === opt.label ? '' : opt.label)}
+                  className={`rounded-lg border px-3 py-2 text-sm font-medium text-left transition-all ${
                     selectedCardLabel === opt.label
-                      ? 'bg-[#E9D8FD] border-[#A977FA]'
+                      ? 'bg-[#2A168F] border-[#2A168F] text-white scale-[1.02] shadow-lg'
                       : 'bg-[#F3E8FF] border-[#D8B4FE] hover:bg-[#E9D8FD]'
                   }`}
                 >
@@ -170,14 +172,7 @@ const AdminOneScreenPage = () => {
                 <span>{stage.sliderLabels[0]}: {stageSliderPreview}%</span>
                 <span>{stage.sliderLabels[1]}: {100 - stageSliderPreview}%</span>
               </div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={stageSliderPreview}
-                onChange={(e) => setStageSliderPreview(Number(e.target.value))}
-                className="w-full"
-              />
+              <input type="range" min={0} max={100} value={stageSliderPreview} onChange={(e) => setStageSliderPreview(Number(e.target.value))} className="w-full" />
             </div>
           )}
 
@@ -190,20 +185,8 @@ const AdminOneScreenPage = () => {
           {stage.answerType === 'choice-then-cards' && stage.subChoices && (
             <div className="space-y-3">
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant={previewAudienceType === 'B2B' ? 'default' : 'outline'}
-                  onClick={() => setPreviewAudienceType('B2B')}
-                >
-                  B2B
-                </Button>
-                <Button
-                  size="sm"
-                  variant={previewAudienceType === 'B2C' ? 'default' : 'outline'}
-                  onClick={() => setPreviewAudienceType('B2C')}
-                >
-                  B2C
-                </Button>
+                <Button size="sm" variant={previewAudienceType === 'B2B' ? 'default' : 'outline'} onClick={() => setPreviewAudienceType('B2B')}>B2B</Button>
+                <Button size="sm" variant={previewAudienceType === 'B2C' ? 'default' : 'outline'} onClick={() => setPreviewAudienceType('B2C')}>B2C</Button>
               </div>
               {previewAudienceType && stage.subChoices[previewAudienceType] && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -211,10 +194,10 @@ const AdminOneScreenPage = () => {
                     <button
                       key={card.id}
                       type="button"
-                      onClick={() => setSelectedCardLabel(card.label)}
-                      className={`rounded-lg border p-2 text-xs text-left transition-colors ${
+                      onClick={() => setSelectedCardLabel(prev => prev === card.label ? '' : card.label)}
+                      className={`rounded-lg border p-2 text-xs text-left transition-all ${
                         selectedCardLabel === card.label
-                          ? 'bg-[#E9D8FD] border-[#A977FA] text-foreground'
+                          ? 'bg-[#2A168F] border-[#2A168F] text-white scale-[1.02] shadow-lg'
                           : 'bg-[#F3E8FF] border-[#D8B4FE] text-muted-foreground hover:bg-[#E9D8FD]'
                       }`}
                     >
@@ -226,124 +209,112 @@ const AdminOneScreenPage = () => {
             </div>
           )}
 
-            {selectedCardLabel && stage.answerType !== 'slider' && (
-              <div className="rounded-lg border border-[#D8B4FE] bg-[#FAF5FF] px-3 py-2 text-sm">
-                <span className="font-semibold">{selectedCardLabel}:</span> {explainCard(selectedCardLabel)}
-              </div>
-            )}
-          </div>
-        )}
+          {selectedCardLabel && stage.answerType !== 'slider' && (
+            <div className="rounded-lg border border-[#2A168F]/30 bg-[#FAF5FF] px-4 py-3 text-sm animate-in fade-in duration-200">
+              <span className="font-semibold text-[#2A168F]">{selectedCardLabel}:</span>
+              <p className="mt-1 text-muted-foreground">{explainCard(selectedCardLabel)}</p>
+            </div>
+          )}
+        </CollapsibleBlock>
 
-        {showLeaderBlock && (
-          <div className="rounded-xl border bg-card p-3 space-y-3">
-            <Button variant="outline" className="w-full" onClick={() => setAdminOpen((v) => !v)}>
-              {adminOpen ? 'Скрыть поле ведущего игры' : 'Открыть поле ведущего игры'}
-            </Button>
+        {/* БЛОК 3: Поле ведущего */}
+        <CollapsibleBlock title="ПИТ-СТОП" open={showLeaderBlock} onToggle={() => setShowLeaderBlock(v => !v)}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {roomState.players.map((player) => (
+              <div key={player.id} className="rounded-xl border bg-background p-3 space-y-3">
+                <PlayerCard
+                  player={player}
+                  showAnswer
+                  showControls
+                  showIdentityLabels
+                  currentStage={roomState.currentStage}
+                  stageConfig={stage}
+                  onAdjustSpeed={(delta) => game.adjustSpeed(player.id, delta)}
+                />
 
-          {adminOpen && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              {roomState.players.map((player, idx) => (
-                <div key={player.id} className="rounded-xl border bg-background p-3 space-y-3">
-                  <p className="text-xs font-semibold text-muted-foreground">Игрок {idx + 1}</p>
-                  <PlayerCard
-                    player={player}
-                    showAnswer
-                    showControls
-                    showIdentityLabels
-                    currentStage={roomState.currentStage}
-                    stageConfig={stage}
-                    onAdjustSpeed={(delta) => game.adjustSpeed(player.id, delta)}
-                  />
-
-                  <div className="rounded-lg border bg-card p-3 space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">Ввод ответа ведущим игры (необязательно)</p>
-                    {stage.answerType === 'single-choice' && stage.options && (
-                      <select className="w-full p-2 rounded border bg-background" value={typeof draftAnswers[player.id] === 'string' ? (draftAnswers[player.id] as string) : ''} onChange={(e) => setDraftAnswers((p) => ({ ...p, [player.id]: e.target.value }))}>
-                        <option value="">Выберите ответ</option>
-                        {stage.options.map((opt) => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
-                      </select>
-                    )}
-                    {stage.answerType === 'slider' && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs">
-                          <span>{stage.sliderLabels?.[0] ?? 'Левая шкала'}: {typeof draftAnswers[player.id] === 'number' ? (draftAnswers[player.id] as number) : 50}%</span>
-                          <span>{stage.sliderLabels?.[1] ?? 'Правая шкала'}: {100 - (typeof draftAnswers[player.id] === 'number' ? (draftAnswers[player.id] as number) : 50)}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          className="w-full"
-                          value={typeof draftAnswers[player.id] === 'number' ? (draftAnswers[player.id] as number) : 50}
-                          onChange={(e) => setDraftAnswers((p) => ({ ...p, [player.id]: Number(e.target.value) }))}
-                        />
+                <div className="rounded-lg border bg-card p-3 space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Ввод ответа ведущим игры (необязательно)</p>
+                  {stage.answerType === 'single-choice' && stage.options && (
+                    <select className="w-full p-2 rounded border bg-background" value={typeof draftAnswers[player.id] === 'string' ? (draftAnswers[player.id] as string) : ''} onChange={(e) => setDraftAnswers((p) => ({ ...p, [player.id]: e.target.value }))}>
+                      <option value="">Выберите ответ</option>
+                      {stage.options.map((opt) => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                    </select>
+                  )}
+                  {stage.answerType === 'slider' && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span>{stage.sliderLabels?.[0] ?? 'Левая шкала'}: {typeof draftAnswers[player.id] === 'number' ? (draftAnswers[player.id] as number) : 50}%</span>
+                        <span>{stage.sliderLabels?.[1] ?? 'Правая шкала'}: {100 - (typeof draftAnswers[player.id] === 'number' ? (draftAnswers[player.id] as number) : 50)}%</span>
                       </div>
-                    )}
-                    {stage.answerType === 'textarea' && (
-                      <textarea rows={3} className="w-full p-2 rounded border bg-background resize-none" placeholder="Внесите ответ игрока" value={typeof draftAnswers[player.id] === 'string' ? (draftAnswers[player.id] as string) : ''} onChange={(e) => setDraftAnswers((p) => ({ ...p, [player.id]: e.target.value }))} />
-                    )}
-                    {stage.answerType === 'choice-then-cards' && (
-                      <div className="space-y-2">
-                        <select
-                          className="w-full p-2 rounded border bg-background"
-                          value={typeof draftAnswers[player.id] === 'object' && draftAnswers[player.id] !== null ? (draftAnswers[player.id] as ChoiceDraft).type : ''}
-                          onChange={(e) =>
+                      <input type="range" min={0} max={100} className="w-full" value={typeof draftAnswers[player.id] === 'number' ? (draftAnswers[player.id] as number) : 50} onChange={(e) => setDraftAnswers((p) => ({ ...p, [player.id]: Number(e.target.value) }))} />
+                    </div>
+                  )}
+                  {stage.answerType === 'textarea' && (
+                    <textarea rows={3} className="w-full p-2 rounded border bg-background resize-none" placeholder="Внесите ответ игрока" value={typeof draftAnswers[player.id] === 'string' ? (draftAnswers[player.id] as string) : ''} onChange={(e) => setDraftAnswers((p) => ({ ...p, [player.id]: e.target.value }))} />
+                  )}
+                  {stage.answerType === 'choice-then-cards' && (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant={typeof draftAnswers[player.id] === 'object' && draftAnswers[player.id] !== null && (draftAnswers[player.id] as ChoiceDraft).type === 'B2B' ? 'default' : 'outline'}
+                          onClick={() =>
                             setDraftAnswers((p) => {
                               const prev = p[player.id] as ChoiceDraft | null;
-                              return {
-                                ...p,
-                                [player.id]: {
-                                  type: e.target.value,
-                                  fields: prev?.fields || {},
-                                },
-                              };
+                              return { ...p, [player.id]: { type: 'B2B', fields: prev?.fields || {} } };
                             })
                           }
                         >
-                          <option value="">Выберите тип</option>
-                          <option value="B2B">B2B</option>
-                          <option value="B2C">B2C</option>
-                        </select>
-                        {typeof draftAnswers[player.id] === 'object' &&
-                          draftAnswers[player.id] !== null &&
-                          (draftAnswers[player.id] as ChoiceDraft).type &&
-                          stage.subChoices?.[(draftAnswers[player.id] as ChoiceDraft).type] && (
-                            <div className="grid grid-cols-1 gap-2">
-                              {stage.subChoices[(draftAnswers[player.id] as ChoiceDraft).type].map((card) => (
+                          B2B
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={typeof draftAnswers[player.id] === 'object' && draftAnswers[player.id] !== null && (draftAnswers[player.id] as ChoiceDraft).type === 'B2C' ? 'default' : 'outline'}
+                          onClick={() =>
+                            setDraftAnswers((p) => {
+                              const prev = p[player.id] as ChoiceDraft | null;
+                              return { ...p, [player.id]: { type: 'B2C', fields: prev?.fields || {} } };
+                            })
+                          }
+                        >
+                          B2C
+                        </Button>
+                      </div>
+                      {typeof draftAnswers[player.id] === 'object' &&
+                        draftAnswers[player.id] !== null &&
+                        (draftAnswers[player.id] as ChoiceDraft).type &&
+                        stage.subChoices?.[(draftAnswers[player.id] as ChoiceDraft).type] && (
+                          <div className="space-y-2">
+                            {stage.subChoices[(draftAnswers[player.id] as ChoiceDraft).type].map((card) => (
+                              <div key={card.id} className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-muted-foreground shrink-0 w-1/3">{card.label}</span>
                                 <input
-                                  key={card.id}
-                                  className="w-full p-2 rounded border bg-background text-sm"
-                                  placeholder={card.label}
+                                  className="flex-1 p-2 rounded border bg-background text-sm"
+                                  placeholder="Ответ..."
                                   value={(draftAnswers[player.id] as ChoiceDraft).fields?.[card.id] || ''}
                                   onChange={(e) =>
                                     setDraftAnswers((p) => {
                                       const prev = (p[player.id] as ChoiceDraft) || { type: '', fields: {} };
-                                      return {
-                                        ...p,
-                                        [player.id]: {
-                                          type: prev.type,
-                                          fields: {
-                                            ...(prev.fields || {}),
-                                            [card.id]: e.target.value,
-                                          },
-                                        },
-                                      };
+                                      return { ...p, [player.id]: { type: prev.type, fields: { ...(prev.fields || {}), [card.id]: e.target.value } } };
                                     })
                                   }
                                 />
-                              ))}
-                            </div>
-                          )}
-                      </div>
-                    )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                  )}
+                  {savedPlayers[player.id] ? (
+                    <Button variant="outline" className="w-full opacity-60 cursor-default" disabled>Ответ сохранён</Button>
+                  ) : (
                     <Button variant="outline" className="w-full" onClick={() => saveAnswer(player.id)}>Сохранить ответ игрока</Button>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
           </div>
-        )}
+        </CollapsibleBlock>
       </div>
     </div>
   );

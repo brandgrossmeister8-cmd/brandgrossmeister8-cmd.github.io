@@ -104,23 +104,20 @@ export function PlayerCard({ player, showAnswer, showControls, showCommentInput,
       'rounded-xl border bg-card p-4 space-y-3 transition-all',
       !player.connected && 'opacity-60',
     )}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🚕</span>
-          <span className="font-bold truncate max-w-[220px]">
-            {showIdentityLabels ? `Имя игрока: ${player.name}` : player.name}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xl shrink-0" style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>🏎️</span>
+          <span className="font-bold truncate">
+            {player.name}
           </span>
+          {player.business && (
+            <span className="text-sm text-muted-foreground truncate">
+              — {player.business}
+            </span>
+          )}
         </div>
         <SpeedBadge speed={player.speed} size="sm" />
       </div>
-
-      {player.business && (
-        <div className="px-2 py-1 rounded-lg bg-muted">
-          <span className="text-xs font-medium text-muted-foreground">
-            {showIdentityLabels ? `Бизнес игрока: ${player.business}` : `📋 ${player.business}`}
-          </span>
-        </div>
-      )}
 
       <div className="flex items-center justify-between">
         <span className={cn('text-xs px-2 py-1 rounded-full font-medium', STATUS_COLORS[player.status])}>

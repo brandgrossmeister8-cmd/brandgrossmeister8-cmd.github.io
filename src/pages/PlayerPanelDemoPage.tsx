@@ -71,7 +71,7 @@ const PlayerPanelDemoPage = () => {
 
       <BrandHeader subtitle="Демо панели игрока (для объяснения)" compact />
 
-      <div className="max-w-md mx-auto mt-2 space-y-4">
+      <div className="w-full mx-auto mt-2 space-y-4">
         <div className="bg-card rounded-xl border p-3 space-y-2">
           <p className="text-xs text-muted-foreground">
             Покажите игрокам, как выглядит их экран. После объяснения нажмите кнопку перехода в панель ведущего.

@@ -35,7 +35,7 @@ const PlayerGamePage = () => {
     return (
       <div className="min-h-screen bg-background bg-speed-lines px-4 py-6">
         <BrandHeader subtitle="Финиш!" compact />
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md mx-auto space-y-6 mt-4">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full mx-auto space-y-6 mt-4">
           <div className="text-center">
             <span className="text-6xl">🏁</span>
             <h2 className="text-2xl font-bold mt-2">Гонка завершена!</h2>
@@ -62,7 +62,7 @@ const PlayerGamePage = () => {
     return (
       <div className="min-h-screen bg-background px-4 py-6">
         <BrandHeader subtitle="Pit-stop" compact />
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md mx-auto space-y-6 mt-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full mx-auto space-y-6 mt-4">
           <div className="bg-card rounded-2xl border p-6 text-center space-y-4 shadow-brand">
             <span className="text-4xl">🔧</span>
             <h2 className="text-xl font-bold">{stage?.cityName} — Разбор</h2>
@@ -84,7 +84,7 @@ const PlayerGamePage = () => {
     return (
       <div className="min-h-screen bg-background px-4 py-6">
         <BrandHeader compact />
-        <div className="max-w-lg mx-auto space-y-4 mt-4">
+        <div className="w-full mx-auto space-y-4 mt-4">
           <RaceTrack players={roomState.players} />
           <Leaderboard players={roomState.players} />
           <Button variant="outline" className="w-full" onClick={() => setShowOverview(false)}>
@@ -104,7 +104,7 @@ const PlayerGamePage = () => {
         background: 'repeating-linear-gradient(90deg, hsl(0 72% 51%) 0px, hsl(0 72% 51%) 10px, hsl(0 0% 100% / 0.9) 10px, hsl(0 0% 100% / 0.9) 20px)'
       }} />
       <BrandHeader compact />
-      <div className="max-w-md mx-auto space-y-4 mt-2">
+      <div className="w-full mx-auto space-y-4 mt-2">
         {/* Speed + stage header */}
         <div className="flex items-center justify-between">
           <div>

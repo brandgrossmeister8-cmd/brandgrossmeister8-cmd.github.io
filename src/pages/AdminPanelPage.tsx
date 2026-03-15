@@ -31,7 +31,7 @@ const AdminPanelPage = () => {
     return (
       <div className="min-h-screen bg-background px-4 py-6">
         <BrandHeader subtitle="Итоги игры" compact />
-        <div className="max-w-5xl mx-auto mt-4 space-y-4">
+        <div className="w-full mx-auto mt-4 space-y-4">
           <RaceTrack players={sorted} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {sorted.map((p) => (
@@ -55,7 +55,7 @@ const AdminPanelPage = () => {
     return (
       <div className="min-h-screen bg-background px-4 py-6">
         <BrandHeader subtitle="Подготовка игры" compact />
-        <div className="max-w-4xl mx-auto mt-4">
+        <div className="w-full mx-auto mt-4">
           <p className="text-muted-foreground">Сначала добавьте игроков и нажмите `Начать игру`.</p>
         </div>
       </div>
@@ -80,7 +80,7 @@ const AdminPanelPage = () => {
     <div className="min-h-screen bg-background px-4 py-4">
       <BrandHeader subtitle={`Этап: ${stage.cityName.toUpperCase()}`} compact />
 
-      <div className="max-w-6xl mx-auto mt-3 space-y-4">
+      <div className="w-full mx-auto mt-3 space-y-4">
         {/* 1) Трасса всегда сверху */}
         <RaceTrack players={roomState.players} compact />
 
@@ -325,7 +325,7 @@ const AdminPanelPage = () => {
     return (
       <div className="min-h-screen bg-background px-4 py-6">
         <BrandHeader subtitle="Финиш — Панель ведущего" compact />
-        <div className="max-w-4xl mx-auto space-y-6 mt-4">
+        <div className="w-full mx-auto space-y-6 mt-4">
           <div className="text-center">
             <span className="text-6xl">🏁</span>
             <h2 className="text-2xl font-bold">Гонка завершена!</h2>
@@ -375,7 +375,7 @@ const AdminPanelPage = () => {
       }} />
       <BrandHeader subtitle={`Панель ведущего${stage ? ` — ${stage.cityName}` : ''}`} compact />
 
-      <div className="max-w-6xl mx-auto space-y-4 mt-2">
+      <div className="w-full mx-auto space-y-4 mt-2">
         {/* Top bar: stage + timer + controls */}
         <div className="flex flex-wrap items-center gap-4 bg-card rounded-xl border p-4">
           {stage && (

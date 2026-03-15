@@ -50,7 +50,7 @@ const SpectatorViewPage = () => {
             total={roomState.timer.total}
             running={roomState.timer.running}
           />
-          <RaceTrack players={sorted} className="max-w-4xl" />
+          <RaceTrack players={sorted} className="w-full" />
         </div>
       </div>
     );
@@ -62,7 +62,7 @@ const SpectatorViewPage = () => {
       <div className="min-h-screen bg-dashboard flex flex-col">
         <SpectatorHeader />
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="max-w-2xl w-full">
+          <div className="w-full">
             <Leaderboard players={sorted} className="text-lg" />
           </div>
         </div>
@@ -79,7 +79,7 @@ const SpectatorViewPage = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-card rounded-2xl border p-8 max-w-md w-full text-center space-y-6 shadow-brand-lg"
+            className="bg-card rounded-2xl border p-8 w-full text-center space-y-6 shadow-brand-lg"
           >
             <div className="w-20 h-20 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-3xl font-bold mx-auto">
               {focusPlayer.name.charAt(0)}
@@ -108,7 +108,7 @@ const SpectatorViewPage = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-card rounded-2xl border p-8 max-w-2xl w-full space-y-6 shadow-brand-lg"
+            className="bg-card rounded-2xl border p-8 w-full space-y-6 shadow-brand-lg"
           >
             <div className="text-center">
               <span className="text-5xl">🔧</span>
@@ -136,7 +136,7 @@ const SpectatorViewPage = () => {
             <span className="text-7xl">🏁</span>
             <h2 className="text-4xl font-bold text-primary-foreground mt-4">Финиш!</h2>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
             {sorted.slice(0, 3).map((p, idx) => (
               <motion.div
                 key={p.id}
@@ -168,7 +168,7 @@ const SpectatorViewPage = () => {
             onClick={() => navigate('/')}
             className="mt-6"
           >
-            🚕 Начать новую игру
+            🏎️ Начать новую игру
           </Button>
         </div>
       </div>
@@ -181,8 +181,8 @@ const SpectatorViewPage = () => {
       <SpectatorHeader />
       <div className="flex-1 flex flex-col items-center justify-center p-8 gap-6">
         <h2 className="text-3xl font-bold text-primary-foreground">{GAME_TITLE}</h2>
-        <RaceTrack players={sorted} className="max-w-4xl" />
-        <Leaderboard players={sorted} className="max-w-2xl" />
+        <RaceTrack players={sorted} className="w-full" />
+        <Leaderboard players={sorted} className="w-full" />
       </div>
     </div>
   );

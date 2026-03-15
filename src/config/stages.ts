@@ -57,7 +57,6 @@ export const STAGES: StageConfig[] = [
     answerType: 'choice-then-cards',
     subChoices: {
       B2B: [
-        { id: 'market', label: 'Рынок В2В', editable: true },
         { id: 'why-business', label: 'Зачем для бизнеса', editable: true },
         { id: 'industry', label: 'Отрасль', editable: true },
         { id: 'business-size', label: 'Размер бизнеса', editable: true },
@@ -66,7 +65,6 @@ export const STAGES: StageConfig[] = [
         { id: 'personal-why', label: 'Личный зачем ЛПР', editable: true },
       ],
       B2C: [
-        { id: 'market', label: 'Рынок В2С', editable: true },
         { id: 'why', label: 'Зачем', editable: true },
         { id: 'behavior', label: 'Модель поведения (рациональная или эмоциональная)', editable: true },
         { id: 'family', label: 'Семья', editable: true },
@@ -79,8 +77,8 @@ export const STAGES: StageConfig[] = [
       ],
     },
     subChoiceHints: {
-      B2B: 'Заполните 7 параметров',
-      B2C: 'Заполните 10 параметров',
+      B2B: 'Заполните 6 параметров',
+      B2C: 'Заполните 9 параметров',
     },
   },
   {
