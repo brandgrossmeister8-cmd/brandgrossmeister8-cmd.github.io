@@ -239,7 +239,7 @@ const AdminOneScreenPage = () => {
     const sorted = [...roomState.players].sort((a, b) => b.speed - a.speed);
 
     return (
-      <div className="min-h-screen bg-background px-4 py-6">
+      <div className="min-h-screen bg-background px-2 sm:px-4 py-4 sm:py-6">
         {/* Печатная версия одного игрока */}
         {printingPlayer && (() => {
           const pp = sorted.find(p => p.id === printingPlayer);
@@ -383,9 +383,9 @@ const AdminOneScreenPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background px-4 py-4">
+    <div className="min-h-screen bg-background px-2 sm:px-4 py-2 sm:py-4">
       <BrandHeader subtitle={`ЭТАП ${roomState.currentStage + 1}. ГОРОД ${stage.cityName.toUpperCase()}`} compact />
-      <div className="w-full mx-auto mt-3 space-y-4">
+      <div className="w-full mx-auto mt-2 sm:mt-3 space-y-3 sm:space-y-4">
 
         {/* БЛОК 1: Бортовой журнал */}
         <CollapsibleBlock title="БОРТОВОЙ ЖУРНАЛ" open={showJournalBlock} onToggle={() => setShowJournalBlock(v => !v)}>
@@ -480,7 +480,7 @@ const AdminOneScreenPage = () => {
 
         {/* БЛОК 3: Поле ведущего */}
         <CollapsibleBlock title="ПИТ-СТОП" open={showLeaderBlock} onToggle={() => setShowLeaderBlock(v => !v)}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {roomState.players.map((player) => (
               <div key={player.id} className="rounded-xl border bg-background p-3 space-y-3">
                 <PlayerCard

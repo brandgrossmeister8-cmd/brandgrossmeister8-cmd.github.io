@@ -161,7 +161,7 @@ const AdminCodesPage = () => {
             {codes.map((code) => {
               const disabled = isDisabled(code);
               return (
-                <div key={code} className={`flex items-center gap-3 rounded-xl border p-4 ${disabled ? 'bg-white/2 border-white/5 opacity-50' : 'bg-white/5 border-white/10'}`}>
+                <div key={code} className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 rounded-xl border p-3 sm:p-4 ${disabled ? 'bg-white/2 border-white/5 opacity-50' : 'bg-white/5 border-white/10'}`}>
                   <div className="flex-1 min-w-0">
                     {editingCode === code ? (
                       <div className="flex items-center gap-2">
@@ -204,60 +204,31 @@ const AdminCodesPage = () => {
                     )}
                     <p className="text-white/50 font-mono text-sm">{code}</p>
                   </div>
-                  {!disabled && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-white/20 text-white hover:bg-white/10 shrink-0"
-                        onClick={() => copyCode(code)}
-                      >
-                        {copied === code ? '✓' : 'Код'}
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                    {!disabled && (
+                      <>
+                        <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => copyCode(code)}>
+                          {copied === code ? '✓' : 'Код'}
+                        </Button>
+                        <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => copyLink(code)}>
+                          {copied === `link-${code}` ? '✓' : 'Ссылка'}
+                        </Button>
+                      </>
+                    )}
+                    {disabled ? (
+                      <Button size="sm" variant="outline" className="border-green-500/30 text-green-400 hover:bg-green-500/10" onClick={() => toggleCode(code)}>
+                        Включить
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-white/20 text-white hover:bg-white/10 shrink-0"
-                        onClick={() => copyLink(code)}
-                      >
-                        {copied === `link-${code}` ? '✓' : 'Ссылка'}
+                    ) : (
+                      <Button size="sm" variant="outline" className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10" onClick={() => toggleCode(code)}>
+                        Отключить
                       </Button>
-                    </>
-                  )}
-                  {disabled ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="shrink-0 border-green-500/30 text-green-400 hover:bg-green-500/10"
-                      onClick={() => toggleCode(code)}
-                    >
-                      Включить
+                    )}
+                    <Button size="sm" variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      onClick={() => { if (extraCodes[code]) { handleDeleteExtra(code); } else { toggleCode(code); if (!disabled) disableCode(code); } }}>
+                      Удалить
                     </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="shrink-0 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
-                      onClick={() => toggleCode(code)}
-                    >
-                      Отключить
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="shrink-0 border-red-500/30 text-red-400 hover:bg-red-500/10"
-                    onClick={() => {
-                      if (extraCodes[code]) {
-                        handleDeleteExtra(code);
-                      } else {
-                        toggleCode(code);
-                        if (!disabled) disableCode(code);
-                      }
-                    }}
-                  >
-                    Удалить
-                  </Button>
+                  </div>
                 </div>
               );
             })}

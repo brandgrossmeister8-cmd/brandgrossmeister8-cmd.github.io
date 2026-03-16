@@ -50,9 +50,9 @@ const LandingPage = () => {
           ))}
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center pt-16">
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center pt-8 sm:pt-16">
           <motion.p
-            className="text-3xl md:text-4xl font-black tracking-wide text-white mb-4 -mt-8"
+            className="text-xl sm:text-3xl md:text-4xl font-black tracking-wide text-white mb-3 sm:mb-4"
             initial="hidden" animate="visible" variants={fadeUp} custom={0}
           >
             {BRAND_NAME.toUpperCase()}
@@ -66,14 +66,14 @@ const LandingPage = () => {
           </motion.div>
 
           <motion.h1
-            className="text-5xl md:text-7xl font-bold mb-4 tracking-tight"
+            className="text-3xl sm:text-5xl md:text-7xl font-bold mb-3 sm:mb-4 tracking-tight"
             initial="hidden" animate="visible" variants={fadeUp} custom={1}
           >
             <span className="text-white">{GAME_TITLE}</span>
           </motion.h1>
 
           <motion.p
-            className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8"
+            className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-6 sm:mb-8 px-2"
             initial="hidden" animate="visible" variants={fadeUp} custom={2}
           >
             Тренинг на основе технологии системного продвижения Ии Имшинецкой.
@@ -86,12 +86,12 @@ const LandingPage = () => {
             <Button
               variant="hero"
               size="xl"
-              className="w-[260px] justify-center bg-white text-[#2A168F] hover:bg-white/90 font-bold"
+              className="w-full sm:w-[260px] justify-center bg-white text-[#2A168F] hover:bg-white/90 font-bold"
               onClick={() => navigate('/access')}
             >
               <span className="text-2xl mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Начать игру <ArrowRight className="w-5 h-5 ml-1" />
             </Button>
-            <Button variant="outline" size="xl" className="w-[260px] justify-center border-white/50 text-white bg-white/10" onClick={() => {
+            <Button variant="outline" size="xl" className="w-full sm:w-[260px] justify-center border-white/50 text-white bg-white/10" onClick={() => {
               document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
             }}>
               Как это работает?
@@ -112,16 +112,16 @@ const LandingPage = () => {
 
           {/* Speed display */}
           <motion.div
-            className="mt-16 flex items-center justify-center gap-8"
+            className="mt-8 sm:mt-16 flex items-center justify-center gap-4 sm:gap-8"
             initial="hidden" animate="visible" variants={fadeUp} custom={4}
           >
             <div className="flex flex-col items-center">
-              <span className="text-6xl font-bold" style={{ color: '#2A168F' }}>60</span>
+              <span className="text-4xl sm:text-6xl font-bold" style={{ color: '#2A168F' }}>60</span>
               <span className="text-xs text-white/60 mt-1">км/ч старт</span>
             </div>
             <div className="w-24 h-px bg-gradient-to-r from-white/20 to-white/60" />
             <div className="flex flex-col items-center">
-              <span className="text-6xl font-bold text-spectator">120</span>
+              <span className="text-4xl sm:text-6xl font-bold text-spectator">120</span>
               <span className="text-xs text-white/60 mt-1">км/ч макс</span>
             </div>
           </motion.div>
