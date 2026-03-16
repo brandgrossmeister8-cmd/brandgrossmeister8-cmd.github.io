@@ -75,20 +75,89 @@ const AdminOneScreenPage = () => {
 
   if (roomState.phase === 'final') {
     const sorted = [...roomState.players].sort((a, b) => b.speed - a.speed);
+
+    const stageRecommendations: Record<number, { strong: string; weak: string }> = {
+      0: {
+        strong: 'Ассортиминск: Вы хорошо понимаете, что вы продаёте, а значит ваша программа продвижения выстроена системно, в соответствии с продвигаемым продуктом.',
+        weak: 'Ассортиминск: Вы не до конца понимаете, что вы продаёте. Соответственно, ваша система продвижения не может быть выстроена эффективно.',
+      },
+      1: {
+        strong: 'Брендск: Вы правильно выбрали приоритеты — не фокусируетесь на отдельных позициях, а продвигаете бренд.',
+        weak: 'Брендск: Вы фокусируетесь на отдельных продуктах, тем самым нерационально используете бюджет. При добавлении каждой новой позиции вам придётся всё начинать заново.',
+      },
+      2: {
+        strong: 'Зачемград: Вы чётко понимаете, зачем ваши клиенты покупают ваш продукт, и можете вести с ними эффективную коммуникацию.',
+        weak: 'Зачемград: Вам необходимо чётко определить, зачем ваши клиенты у вас покупают, чтобы выстроить эффективную коммуникацию.',
+      },
+      3: {
+        strong: 'Траффик-Сити: Вы эффективно вкладываете бюджеты в продвижение и привлекаете нужную аудиторию.',
+        weak: 'Траффик-Сити: Вы неэффективно вкладываете бюджеты в привлечение аудитории — привлекаете не тех, кого нужно, либо зовёте всех. Ваши бюджеты расходуются неэффективно.',
+      },
+      4: {
+        strong: 'Цалово: Вы хорошо изучили свою целевую аудиторию. Это ваш сильный плюс — вы эффективно взаимодействуете с аудиторией.',
+        weak: 'Цалово: Вы плохо знаете свою целевую аудиторию. Все ваши коммуникации нацелены не на эффективное взаимодействие, а в большей степени способствуют трате бюджета.',
+      },
+      5: {
+        strong: 'Выборг: Вы чётко понимаете, что система — это основа, а креатив — дополнение. Двигайтесь в этом направлении!',
+        weak: 'Выборг: Креатив — это хорошо, но это всего лишь эффект в точке, здесь и сейчас. Эффект на длинной дистанции даёт только система.',
+      },
+    };
+
+    const getPlayerResults = (deltas: Record<number, 10 | -10> | undefined) => {
+      if (!deltas) return { strong: [] as string[], weak: [] as string[] };
+      const strong: string[] = [];
+      const weak: string[] = [];
+      Object.entries(deltas).forEach(([stageIdx, delta]) => {
+        const rec = stageRecommendations[Number(stageIdx)];
+        if (!rec) return;
+        if (delta === 10) strong.push(rec.strong);
+        else weak.push(rec.weak);
+      });
+      return { strong, weak };
+    };
+
     return (
       <div className="min-h-screen bg-background px-4 py-6">
         <BrandHeader subtitle="ИТОГИ ИГРЫ" compact />
         <div className="w-full mx-auto mt-4 space-y-4">
           <RaceTrack players={sorted} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {sorted.map((p) => (
-              <div key={p.id} className={`rounded-xl border p-4 ${finalCardTone(p.speed)}`}>
-                <p className="font-bold">{p.name}</p>
-                <p className="text-sm opacity-80">{p.business}</p>
-                <p className="text-2xl font-bold mt-2">{p.speed} км/ч</p>
-                <p className="text-xs opacity-80 italic">{getInterpretation(p.speed)}</p>
-              </div>
-            ))}
+            {sorted.map((p) => {
+              const { strong, weak } = getPlayerResults(p.lastSpeedDelta);
+              return (
+                <div key={p.id} className={`rounded-xl border p-4 space-y-3 ${finalCardTone(p.speed)}`}>
+                  <div>
+                    <p className="font-bold text-lg">{p.name}</p>
+                    <p className="text-sm opacity-80">{p.business}</p>
+                    <p className="text-3xl font-bold mt-2">{p.speed} км/ч</p>
+                    <p className="text-xs opacity-80 italic">{getInterpretation(p.speed)}</p>
+                  </div>
+                  {strong.length > 0 && (
+                    <div className="rounded-lg bg-green-100 border border-green-300 p-3 space-y-2">
+                      <p className="font-bold text-green-800 flex items-center gap-1">
+                        <span className="text-lg">&#x2B06;</span> Сильные стороны
+                      </p>
+                      {strong.map((text, i) => (
+                        <p key={i} className="text-sm text-green-900">{text}</p>
+                      ))}
+                    </div>
+                  )}
+                  {weak.length > 0 && (
+                    <div className="rounded-lg bg-red-100 border border-red-300 p-3 space-y-2">
+                      <p className="font-bold text-red-800 flex items-center gap-1">
+                        <span className="text-lg">&#x2B07;</span> Зоны роста
+                      </p>
+                      {weak.map((text, i) => (
+                        <p key={i} className="text-sm text-red-900">{text}</p>
+                      ))}
+                    </div>
+                  )}
+                  {strong.length === 0 && weak.length === 0 && (
+                    <p className="text-xs opacity-60 italic">Нет данных по этапам</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <Button variant="hero" className="w-full" onClick={() => { game.restartGame(); navigate('/'); }}>Начать новую игру</Button>
         </div>
