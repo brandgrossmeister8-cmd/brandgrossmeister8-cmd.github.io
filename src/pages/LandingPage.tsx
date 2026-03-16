@@ -39,7 +39,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Hero */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#2A168F]">
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#6838CE]">
         {/* Track lines */}
         <div className="absolute inset-0 pointer-events-none">
           {[20, 35, 50, 65, 80].map((top, i) => (
@@ -116,7 +116,7 @@ const LandingPage = () => {
             initial="hidden" animate="visible" variants={fadeUp} custom={4}
           >
             <div className="flex flex-col items-center">
-              <span className="text-6xl font-bold text-gradient-brand">60</span>
+              <span className="text-6xl font-bold" style={{ color: '#2A168F' }}>60</span>
               <span className="text-xs text-white/60 mt-1">км/ч старт</span>
             </div>
             <div className="w-24 h-px bg-gradient-to-r from-white/20 to-white/60" />

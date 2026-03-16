@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ACCESS_CODES, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode } from '@/config/accessCodes';
+import { useNavigate } from 'react-router-dom';
+import { ACCESS_CODES, getAllCodes, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode, addCode, generateUniqueCode, getExtraCodes, removeExtraCode } from '@/config/accessCodes';
 import { BRAND_NAME } from '@/config/stages';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -7,6 +8,7 @@ import { motion } from 'framer-motion';
 const MASTER_PASSWORD = '369852147';
 
 const AdminCodesPage = () => {
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [authorized, setAuthorized] = useState(false);
   const [error, setError] = useState('');
@@ -15,6 +17,8 @@ const AdminCodesPage = () => {
   const [editingCode, setEditingCode] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [disabledCodes, setDisabledCodes] = useState<string[]>(getDisabledCodes);
+  const [newName, setNewName] = useState('');
+  const [allCodes, setAllCodes] = useState<Record<string, string>>(getAllCodes);
 
   const handleLogin = () => {
     if (password === MASTER_PASSWORD) {
@@ -106,7 +110,22 @@ const AdminCodesPage = () => {
     );
   }
 
-  const codes = Object.keys(ACCESS_CODES);
+  const codes = Object.keys(allCodes);
+  const extraCodes = getExtraCodes();
+
+  const handleAddHost = () => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const code = generateUniqueCode();
+    addCode(code, trimmed);
+    setAllCodes(getAllCodes());
+    setNewName('');
+  };
+
+  const handleDeleteExtra = (code: string) => {
+    removeExtraCode(code);
+    setAllCodes(getAllCodes());
+  };
 
   return (
     <div className="min-h-screen bg-[#2A168F] px-4 py-8">
@@ -119,6 +138,23 @@ const AdminCodesPage = () => {
         <div className="bg-[#1E0F6E] rounded-2xl border border-white/20 p-6 shadow-2xl space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-white">Ведущие ({codes.filter(c => !isDisabled(c)).length} из {codes.length})</h2>
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddHost()}
+              placeholder="Имя нового ведущего"
+              className="flex-1 p-3 rounded-lg border border-white/20 bg-white/10 text-white text-sm focus:ring-2 focus:ring-white/40 outline-none placeholder:text-white/30"
+            />
+            <Button
+              className="bg-white text-[#2A168F] hover:bg-white/90 font-bold shrink-0"
+              onClick={handleAddHost}
+              disabled={!newName.trim()}
+            >
+              + Добавить
+            </Button>
           </div>
 
           <div className="space-y-3">
@@ -188,18 +224,50 @@ const AdminCodesPage = () => {
                       </Button>
                     </>
                   )}
+                  {disabled ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="shrink-0 border-green-500/30 text-green-400 hover:bg-green-500/10"
+                      onClick={() => toggleCode(code)}
+                    >
+                      Включить
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="shrink-0 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+                      onClick={() => toggleCode(code)}
+                    >
+                      Отключить
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
-                    className={`shrink-0 ${disabled ? 'border-green-500/30 text-green-400 hover:bg-green-500/10' : 'border-red-500/30 text-red-400 hover:bg-red-500/10'}`}
-                    onClick={() => toggleCode(code)}
+                    className="shrink-0 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                    onClick={() => {
+                      if (extraCodes[code]) {
+                        handleDeleteExtra(code);
+                      } else {
+                        toggleCode(code);
+                        if (!disabled) disableCode(code);
+                      }
+                    }}
                   >
-                    {disabled ? 'Включить' : 'Удалить'}
+                    Удалить
                   </Button>
                 </div>
               );
             })}
           </div>
+        </div>
+
+        <div className="flex justify-center">
+          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => navigate('/')}>
+            На главную
+          </Button>
         </div>
       </div>
     </div>

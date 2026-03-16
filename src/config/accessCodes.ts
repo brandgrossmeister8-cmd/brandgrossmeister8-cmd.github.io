@@ -19,6 +19,52 @@ export const ACCESS_CODES: Record<string, string> = {
 const STORAGE_KEY = 'game-access-code';
 const NAMES_KEY = 'game-custom-names';
 const DISABLED_KEY = 'game-disabled-codes';
+const EXTRA_CODES_KEY = 'game-extra-codes';
+
+export function getExtraCodes(): Record<string, string> {
+  try {
+    const saved = localStorage.getItem(EXTRA_CODES_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+}
+
+export function saveExtraCodes(codes: Record<string, string>) {
+  localStorage.setItem(EXTRA_CODES_KEY, JSON.stringify(codes));
+}
+
+export function getAllCodes(): Record<string, string> {
+  return { ...ACCESS_CODES, ...getExtraCodes() };
+}
+
+export function addCode(code: string, name: string) {
+  const extra = getExtraCodes();
+  extra[code.trim().toUpperCase()] = name.trim();
+  saveExtraCodes(extra);
+}
+
+export function removeExtraCode(code: string) {
+  const extra = getExtraCodes();
+  delete extra[code];
+  saveExtraCodes(extra);
+}
+
+function generateCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  code += '-';
+  code += digits[Math.floor(Math.random() * digits.length)];
+  code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+export function generateUniqueCode(): string {
+  const all = getAllCodes();
+  let code = generateCode();
+  while (all[code]) code = generateCode();
+  return code;
+}
 
 export function getDisabledCodes(): string[] {
   try {
@@ -54,7 +100,8 @@ export function getActiveCodes(): string[] {
 
 export function validateCode(code: string): string | null {
   const upper = code.trim().toUpperCase();
-  return (ACCESS_CODES[upper] && isCodeActive(upper)) ? upper : null;
+  const all = getAllCodes();
+  return (all[upper] && isCodeActive(upper)) ? upper : null;
 }
 
 export function getCustomNames(): Record<string, string> {
@@ -71,7 +118,8 @@ export function saveCustomNames(names: Record<string, string>) {
 export function getHostName(code: string): string {
   const upper = code.trim().toUpperCase();
   const custom = getCustomNames();
-  return custom[upper] || ACCESS_CODES[upper] || 'Ведущий';
+  const all = getAllCodes();
+  return custom[upper] || all[upper] || 'Ведущий';
 }
 
 export function saveCode(code: string) {
@@ -88,5 +136,7 @@ export function clearCode() {
 
 export function isAuthorized(): boolean {
   const code = getSavedCode();
-  return code !== null && ACCESS_CODES[code] !== undefined && isCodeActive(code);
+  if (!code) return false;
+  const all = getAllCodes();
+  return all[code] !== undefined && isCodeActive(code);
 }
