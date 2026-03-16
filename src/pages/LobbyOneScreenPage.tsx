@@ -23,7 +23,6 @@ const LobbyOneScreenPage = () => {
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
-    // Всегда начинаем с чистой регистрации: новая комната без старых игроков
     game.createRoom();
     game.setRole('admin');
   }, [game.createRoom, game.setRole]);
@@ -39,7 +38,7 @@ const LobbyOneScreenPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-6">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg space-y-6">
         <BrandHeader subtitle="Регистрация игроков перед стартом" />
         <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">
           <input
@@ -67,6 +66,10 @@ const LobbyOneScreenPage = () => {
               </div>
             ))}
           </div>
+
+          <p className="text-xs text-muted-foreground text-center">
+            Данные игроков не собираются и не хранятся. Все данные удаляются сразу после окончания игры.
+          </p>
 
           <Button variant="hero" className="w-full" onClick={() => { game.startGame(); navigate('/admin'); }} disabled={players.length === 0}>
             Начать игру

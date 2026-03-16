@@ -18,6 +18,7 @@ export interface Player {
   answers: Record<number, unknown>;
   adminPlayerComment?: string;
   business?: string;
+  email?: string;
   lastSpeedDelta?: Record<number, 10 | -10>; // История решений по этапам
 }
 

@@ -27,7 +27,7 @@ interface GameContextType {
   setRole: (role: Role | null) => void;
   restartGame: () => void;
   addDemoPlayers: () => void;
-  adminAddPlayer: (name: string, business: string) => void;
+  adminAddPlayer: (name: string, business: string, email?: string) => void;
   adminSetPlayerAnswer: (playerId: string, stageIndex: number, answer: unknown) => void;
 }
 
@@ -433,10 +433,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, [isDemo]);
 
-  const adminAddPlayer = useCallback((name: string, business: string) => {
+  const adminAddPlayer = useCallback((name: string, business: string, email?: string) => {
     if (!isDemo) {
       const socket = connectSocket();
-      socket?.emit('admin-add-player', { name, business });
+      socket?.emit('admin-add-player', { name, business, email });
       return;
     }
     setRoomState(prev => {
@@ -445,6 +445,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         id: generateId(),
         name: name.trim(),
         business: business.trim(),
+        email: email?.trim() || undefined,
         speed: INITIAL_SPEED,
         position: prev.players.length + 1,
         status: 'waiting',

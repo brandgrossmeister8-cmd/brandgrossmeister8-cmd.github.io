@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
-import { isAuthorized } from '@/config/accessCodes';
+import { isAuthorized, getSavedCode, getHostName } from '@/config/accessCodes';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { RaceTrack } from '@/components/game/RaceTrack';
 import { TimerDisplay } from '@/components/game/TimerDisplay';
@@ -73,93 +73,277 @@ const AdminOneScreenPage = () => {
     return 'bg-red-100 text-red-950 border-red-400';
   };
 
+  const [hiddenPlayers, setHiddenPlayers] = useState<Record<string, boolean>>({});
+  const [printingPlayer, setPrintingPlayer] = useState<string | null>(null);
+  const [emailCopied, setEmailCopied] = useState<string | null>(null); // хранит email для индикации
+
+  const stageRecommendations: Record<number, { city: string; strong: string; weak: string }> = {
+    0: {
+      city: 'АССОРТИМИНСК',
+      strong: 'Вы хорошо понимаете, что вы продаёте, а значит ваша программа продвижения выстроена системно, в соответствии с продвигаемым продуктом.',
+      weak: 'Вы не до конца понимаете, что вы продаёте. Соответственно, ваша система продвижения не может быть выстроена эффективно.',
+    },
+    1: {
+      city: 'БРЕНДСК',
+      strong: 'Вы правильно выбрали приоритеты — не фокусируетесь на отдельных позициях, а продвигаете бренд.',
+      weak: 'Вы фокусируетесь на отдельных продуктах, тем самым нерационально используете бюджет. При добавлении каждой новой позиции вам придётся всё начинать заново.',
+    },
+    2: {
+      city: 'ЗАЧЕМГРАД',
+      strong: 'Вы чётко понимаете, зачем ваши клиенты покупают ваш продукт, и можете вести с ними эффективную коммуникацию.',
+      weak: 'Вам необходимо чётко определить, зачем ваши клиенты у вас покупают, чтобы выстроить эффективную коммуникацию.',
+    },
+    3: {
+      city: 'ТРАФФИК-СИТИ',
+      strong: 'Вы эффективно вкладываете бюджеты в продвижение и привлекаете нужную аудиторию.',
+      weak: 'Вы неэффективно вкладываете бюджеты в привлечение аудитории — привлекаете не тех, кого нужно, либо зовёте всех. Ваши бюджеты расходуются неэффективно.',
+    },
+    4: {
+      city: 'ЦАЛОВО',
+      strong: 'Вы хорошо изучили свою целевую аудиторию. Это ваш сильный плюс — вы эффективно взаимодействуете с аудиторией.',
+      weak: 'Вы плохо знаете свою целевую аудиторию. Все ваши коммуникации нацелены не на эффективное взаимодействие, а в большей степени способствуют трате бюджета.',
+    },
+    5: {
+      city: 'ВЫБОРГ',
+      strong: 'Вы чётко понимаете, что система — это основа, а креатив — дополнение. Двигайтесь в этом направлении!',
+      weak: 'Креатив — это хорошо, но это всего лишь эффект в точке, здесь и сейчас. Эффект на длинной дистанции даёт только система.',
+    },
+  };
+
+  const getPlayerResults = (deltas: Record<number, 10 | -10> | undefined) => {
+    if (!deltas) return { strong: [] as { city: string; text: string }[], weak: [] as { city: string; text: string }[] };
+    const strong: { city: string; text: string }[] = [];
+    const weak: { city: string; text: string }[] = [];
+    Object.entries(deltas).forEach(([stageIdx, delta]) => {
+      const rec = stageRecommendations[Number(stageIdx)];
+      if (!rec) return;
+      if (delta === 10) strong.push({ city: rec.city, text: rec.strong });
+      else weak.push({ city: rec.city, text: rec.weak });
+    });
+    return { strong, weak };
+  };
+
+  const togglePlayerVisibility = (id: string) => {
+    setHiddenPlayers(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const generatePlayerPdfHtml = (player: { name: string; business?: string; speed: number; lastSpeedDelta?: Record<number, 10 | -10> }) => {
+    const { strong, weak } = getPlayerResults(player.lastSpeedDelta);
+    const today = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+    const savedCode = getSavedCode();
+    const hostDisplayName = savedCode === 'MASTER'
+      ? (localStorage.getItem('game-host-display-name') || 'Ведущий')
+      : savedCode ? getHostName(savedCode) : 'Ведущий';
+    const strongHtml = strong.length > 0 ? `
+      <div style="border:1.5px solid #22c55e;border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#f0fdf4">
+        <p style="font-weight:bold;color:#166534;margin-bottom:6px;font-size:12px">&#x2B06; СИЛЬНЫЕ СТОРОНЫ</p>
+        ${strong.map(item => `<p style="margin:0 0 1px"><span style="font-size:11px;font-weight:bold;color:#14532d">${item.city}:</span> <span style="font-size:11px;color:#166534">${item.text}</span></p>`).join('')}
+      </div>` : '';
+    const weakHtml = weak.length > 0 ? `
+      <div style="border:1.5px solid #ef4444;border-radius:8px;padding:10px 12px;background:#fef2f2">
+        <p style="font-weight:bold;color:#991b1b;margin-bottom:6px;font-size:12px">&#x2B07; ЗОНЫ РОСТА</p>
+        ${weak.map(item => `<p style="margin:0 0 1px"><span style="font-size:11px;font-weight:bold;color:#7f1d1d">${item.city}:</span> <span style="font-size:11px;color:#991b1b">${item.text}</span></p>`).join('')}
+      </div>` : '';
+
+    const speedColor = player.speed > 100 ? '#166534' : player.speed > 60 ? '#854d0e' : player.speed === 60 ? '#000' : '#991b1b';
+    const speedBg = player.speed > 100 ? '#f0fdf4' : player.speed > 60 ? '#fefce8' : player.speed === 60 ? '#fff' : '#fef2f2';
+
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Бортовой журнал — ${player.name}</title>
+      <style>
+        @page{size:A4;margin:0}
+        *{box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;margin:0;padding:0}
+        .page{width:210mm;height:297mm;margin:0 auto;position:relative;overflow:hidden;display:flex;flex-direction:column}
+        .header{background:#6838CE;color:white;padding:20px 30px 16px;text-align:center;position:relative;flex-shrink:0}
+        .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,#fff 0px,#fff 8px,#6838CE 8px,#6838CE 16px)}
+        .content{padding:16px 30px 20px;flex:1;display:flex;flex-direction:column}
+        .speed-block{text-align:center;padding:14px;border-radius:12px;background:${speedBg};border:1.5px solid ${speedColor}40;margin-bottom:14px}
+        .car{font-size:28px;display:inline-block;transform:scaleX(-1);filter:sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)}
+        .footer{margin-top:auto;text-align:center;padding-top:12px;border-top:1px solid #e5e7eb}
+        p{margin:0 0 3px}
+      </style>
+      </head><body>
+      <div class="page">
+        <div class="header">
+          <p style="font-size:9px;letter-spacing:3px;opacity:0.7;margin-bottom:4px">ИМШИНЕЦКАЯ И ПАРТНЕРЫ</p>
+          <p style="font-size:22px;font-weight:800;margin:0">БОРТОВОЙ ЖУРНАЛ</p>
+          <span class="car">🏎️</span>
+          <p style="font-size:16px;font-weight:600;margin-top:4px">${player.name}</p>
+          <p style="font-size:12px;opacity:0.8">${player.business || ''}</p>
+          <p style="font-size:10px;opacity:0.6;margin-top:8px">${today} | Ведущий: ${hostDisplayName}</p>
+        </div>
+        <div class="content">
+          <div class="speed-block">
+            <p style="font-size:11px;color:#666">Финальная скорость</p>
+            <p style="font-size:40px;font-weight:800;color:${speedColor};line-height:1.1">${player.speed} км/ч</p>
+            <p style="font-size:11px;color:#666;font-style:italic">${getInterpretation(player.speed)}</p>
+          </div>
+          ${strongHtml}${weakHtml}
+          <div class="footer">
+            <p style="font-size:9px;color:#aaa">ИМШИНЕЦКАЯ И ПАРТНЕРЫ | Маркетинговый заезд</p>
+          </div>
+        </div>
+      </div>
+      </body></html>`;
+  };
+
+  const downloadPlayerPdf = (player: { name: string; business?: string; speed: number; lastSpeedDelta?: Record<number, 10 | -10> }) => {
+    const html = generatePlayerPdfHtml(player);
+    // Добавляем кнопку "Вернуться" в HTML
+    const htmlWithButton = html.replace('</body>', `
+      <div style="position:fixed;top:16px;right:16px;display:flex;gap:8px;z-index:100" class="no-print">
+        <button onclick="window.print()" style="padding:10px 20px;background:#6838CE;color:white;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer">Сохранить PDF</button>
+        <button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#333;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer">Вернуться к итогам</button>
+      </div>
+      <style>@media print{.no-print{display:none!important}}</style>
+      </body>`);
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(htmlWithButton);
+    win.document.close();
+  };
+
+  const sharePlayerPdf = async (player: { name: string; business?: string; speed: number; email?: string; lastSpeedDelta?: Record<number, 10 | -10> }) => {
+    const html = generatePlayerPdfHtml(player);
+    const blob = new Blob([html], { type: 'text/html' });
+    const file = new File([blob], `Бортовой журнал — ${player.name}.html`, { type: 'text/html' });
+
+    // Пробуем встроенную функцию "Поделиться"
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: `Бортовой журнал — ${player.name}`,
+          text: `Результаты игры "Маркетинговый заезд". Финальная скорость: ${player.speed} км/ч`,
+          files: [file],
+        });
+        return;
+      } catch { /* пользователь отменил */ }
+    }
+
+    // Запасной вариант — скачиваем файл + копируем email
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Бортовой журнал — ${player.name}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    if (player.email) {
+      await navigator.clipboard.writeText(player.email);
+      setEmailCopied(player.email);
+      setTimeout(() => setEmailCopied(null), 5000);
+    }
+  };
+
   if (roomState.phase === 'final') {
     const sorted = [...roomState.players].sort((a, b) => b.speed - a.speed);
 
-    const stageRecommendations: Record<number, { strong: string; weak: string }> = {
-      0: {
-        strong: 'Ассортиминск: Вы хорошо понимаете, что вы продаёте, а значит ваша программа продвижения выстроена системно, в соответствии с продвигаемым продуктом.',
-        weak: 'Ассортиминск: Вы не до конца понимаете, что вы продаёте. Соответственно, ваша система продвижения не может быть выстроена эффективно.',
-      },
-      1: {
-        strong: 'Брендск: Вы правильно выбрали приоритеты — не фокусируетесь на отдельных позициях, а продвигаете бренд.',
-        weak: 'Брендск: Вы фокусируетесь на отдельных продуктах, тем самым нерационально используете бюджет. При добавлении каждой новой позиции вам придётся всё начинать заново.',
-      },
-      2: {
-        strong: 'Зачемград: Вы чётко понимаете, зачем ваши клиенты покупают ваш продукт, и можете вести с ними эффективную коммуникацию.',
-        weak: 'Зачемград: Вам необходимо чётко определить, зачем ваши клиенты у вас покупают, чтобы выстроить эффективную коммуникацию.',
-      },
-      3: {
-        strong: 'Траффик-Сити: Вы эффективно вкладываете бюджеты в продвижение и привлекаете нужную аудиторию.',
-        weak: 'Траффик-Сити: Вы неэффективно вкладываете бюджеты в привлечение аудитории — привлекаете не тех, кого нужно, либо зовёте всех. Ваши бюджеты расходуются неэффективно.',
-      },
-      4: {
-        strong: 'Цалово: Вы хорошо изучили свою целевую аудиторию. Это ваш сильный плюс — вы эффективно взаимодействуете с аудиторией.',
-        weak: 'Цалово: Вы плохо знаете свою целевую аудиторию. Все ваши коммуникации нацелены не на эффективное взаимодействие, а в большей степени способствуют трате бюджета.',
-      },
-      5: {
-        strong: 'Выборг: Вы чётко понимаете, что система — это основа, а креатив — дополнение. Двигайтесь в этом направлении!',
-        weak: 'Выборг: Креатив — это хорошо, но это всего лишь эффект в точке, здесь и сейчас. Эффект на длинной дистанции даёт только система.',
-      },
-    };
-
-    const getPlayerResults = (deltas: Record<number, 10 | -10> | undefined) => {
-      if (!deltas) return { strong: [] as string[], weak: [] as string[] };
-      const strong: string[] = [];
-      const weak: string[] = [];
-      Object.entries(deltas).forEach(([stageIdx, delta]) => {
-        const rec = stageRecommendations[Number(stageIdx)];
-        if (!rec) return;
-        if (delta === 10) strong.push(rec.strong);
-        else weak.push(rec.weak);
-      });
-      return { strong, weak };
-    };
-
     return (
       <div className="min-h-screen bg-background px-4 py-6">
-        <BrandHeader subtitle="ИТОГИ ИГРЫ" compact />
-        <div className="w-full mx-auto mt-4 space-y-4">
-          <RaceTrack players={sorted} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {sorted.map((p) => {
-              const { strong, weak } = getPlayerResults(p.lastSpeedDelta);
-              return (
-                <div key={p.id} className={`rounded-xl border p-4 space-y-3 ${finalCardTone(p.speed)}`}>
-                  <div>
-                    <p className="font-bold text-lg">{p.name}</p>
-                    <p className="text-sm opacity-80">{p.business}</p>
-                    <p className="text-3xl font-bold mt-2">{p.speed} км/ч</p>
-                    <p className="text-xs opacity-80 italic">{getInterpretation(p.speed)}</p>
-                  </div>
-                  {strong.length > 0 && (
-                    <div className="rounded-lg bg-green-100 border border-green-300 p-3 space-y-2">
-                      <p className="font-bold text-green-800 flex items-center gap-1">
-                        <span className="text-lg">&#x2B06;</span> Сильные стороны
-                      </p>
-                      {strong.map((text, i) => (
-                        <p key={i} className="text-sm text-green-900">{text}</p>
-                      ))}
-                    </div>
-                  )}
-                  {weak.length > 0 && (
-                    <div className="rounded-lg bg-red-100 border border-red-300 p-3 space-y-2">
-                      <p className="font-bold text-red-800 flex items-center gap-1">
-                        <span className="text-lg">&#x2B07;</span> Зоны роста
-                      </p>
-                      {weak.map((text, i) => (
-                        <p key={i} className="text-sm text-red-900">{text}</p>
-                      ))}
-                    </div>
-                  )}
-                  {strong.length === 0 && weak.length === 0 && (
-                    <p className="text-xs opacity-60 italic">Нет данных по этапам</p>
-                  )}
+        {/* Печатная версия одного игрока */}
+        {printingPlayer && (() => {
+          const pp = sorted.find(p => p.id === printingPlayer);
+          if (!pp) return null;
+          const { strong: ps, weak: pw } = getPlayerResults(pp.lastSpeedDelta);
+          return (
+            <div className="hidden print:block print:p-6">
+              <style>{`@media print { .no-print { display: none !important; } @page { size: A4; margin: 15mm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }`}</style>
+              <h1 className="text-2xl font-bold text-center mb-1">БОРТОВОЙ ЖУРНАЛ</h1>
+              <p className="text-center text-lg font-medium">{pp.name} — {pp.business}</p>
+              <p className="text-center text-3xl font-bold mt-4">{pp.speed} км/ч</p>
+              <p className="text-center text-sm italic mb-6">{getInterpretation(pp.speed)}</p>
+              {ps.length > 0 && (
+                <div className="border-2 border-green-400 rounded-lg p-4 mb-4 bg-green-50">
+                  <p className="font-bold text-green-800 mb-2">&#x2B06; Сильные стороны</p>
+                  {ps.map((item, i) => <div key={i} className="mb-2"><p className="text-sm font-bold">{item.city}</p><p className="text-sm">{item.text}</p></div>)}
                 </div>
-              );
-            })}
+              )}
+              {pw.length > 0 && (
+                <div className="border-2 border-red-400 rounded-lg p-4 bg-red-50">
+                  <p className="font-bold text-red-800 mb-2">&#x2B07; Зоны роста</p>
+                  {pw.map((item, i) => <div key={i} className="mb-2"><p className="text-sm font-bold">{item.city}</p><p className="text-sm">{item.text}</p></div>)}
+                </div>
+              )}
+              <p className="text-center text-xs mt-8 text-gray-400">ИМШИНЕЦКАЯ И ПАРТНЕРЫ | Маркетинговый заезд</p>
+            </div>
+          );
+        })()}
+
+        <div className={printingPlayer ? 'no-print' : ''}>
+          <BrandHeader subtitle="ИТОГИ ИГРЫ" compact />
+          <div className="w-full mx-auto mt-4 space-y-4">
+            <RaceTrack players={sorted} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {sorted.map((p) => {
+                const { strong, weak } = getPlayerResults(p.lastSpeedDelta);
+                const hidden = hiddenPlayers[p.id];
+                return (
+                  <div key={p.id} className={`rounded-xl border p-4 space-y-3 ${finalCardTone(p.speed)}`}>
+                    {/* Заголовок с кнопкой скрытия */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider opacity-60">БОРТОВОЙ ЖУРНАЛ</p>
+                        <p className="font-bold text-lg">{p.name} <span className="font-normal text-sm opacity-70">— {p.business}</span></p>
+                      </div>
+                      <button
+                        onClick={() => togglePlayerVisibility(p.id)}
+                        className="text-xs opacity-50 hover:opacity-100 transition-opacity"
+                        title={hidden ? 'Показать' : 'Скрыть'}
+                      >
+                        {hidden ? '👁' : '👁‍🗨'}
+                      </button>
+                    </div>
+
+                    {!hidden && (
+                      <>
+                        <div>
+                          <p className="text-3xl font-bold mt-1">{p.speed} км/ч</p>
+                          <p className="text-xs opacity-80 italic">{getInterpretation(p.speed)}</p>
+                        </div>
+                        {strong.length > 0 && (
+                          <div className="rounded-lg bg-green-100 border border-green-300 p-3 space-y-3">
+                            <p className="font-bold text-green-800 flex items-center gap-1">
+                              <span className="text-lg">&#x2B06;</span> Сильные стороны
+                            </p>
+                            {strong.map((item, i) => (
+                              <div key={i}>
+                                <p className="text-sm font-bold text-green-900">{item.city}</p>
+                                <p className="text-sm text-green-800">{item.text}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {weak.length > 0 && (
+                          <div className="rounded-lg bg-red-100 border border-red-300 p-3 space-y-3">
+                            <p className="font-bold text-red-800 flex items-center gap-1">
+                              <span className="text-lg">&#x2B07;</span> Зоны роста
+                            </p>
+                            {weak.map((item, i) => (
+                              <div key={i}>
+                                <p className="text-sm font-bold text-red-900">{item.city}</p>
+                                <p className="text-sm text-red-800">{item.text}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {strong.length === 0 && weak.length === 0 && (
+                          <p className="text-xs opacity-60 italic">Нет данных по этапам</p>
+                        )}
+
+                        {/* Кнопка скачивания */}
+                        <div className="pt-2 border-t border-border/30">
+                          <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => downloadPlayerPdf(p)}>
+                            Скачать PDF
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <Button variant="hero" className="w-full" onClick={() => { game.restartGame(); navigate('/'); }}>Начать новую игру</Button>
           </div>
-          <Button variant="hero" className="w-full" onClick={() => { game.restartGame(); navigate('/'); }}>Начать новую игру</Button>
         </div>
       </div>
     );
