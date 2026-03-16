@@ -2,22 +2,24 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BRAND_NAME, GAME_TITLE } from '@/config/stages';
-import { validateCode, getHostName, saveCode, isAuthorized } from '@/config/accessCodes';
+import { validateCode, saveCode, isAuthorized, saveCustomNames, getCustomNames } from '@/config/accessCodes';
 import { motion } from 'framer-motion';
+
+const MASTER_PASSWORD = '369852147';
+const HOST_NAME_KEY = 'game-host-display-name';
 
 const AccessPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [code, setCode] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
 
-  // Если уже авторизован — сразу в игру
   useEffect(() => {
     if (isAuthorized()) {
       navigate('/game', { replace: true });
       return;
     }
-    // Если код передан через ссылку — автоматически проверяем
     const urlCode = searchParams.get('code');
     if (urlCode) {
       const valid = validateCode(urlCode);
@@ -30,16 +32,23 @@ const AccessPage = () => {
     }
   }, [searchParams, navigate]);
 
-  const MASTER_PASSWORD = '369852147';
-
   const handleSubmit = () => {
+    if (!name.trim()) {
+      setError('Введите ваше имя');
+      return;
+    }
     if (code === MASTER_PASSWORD) {
+      localStorage.setItem(HOST_NAME_KEY, name.trim());
       saveCode('MASTER');
       navigate('/game');
       return;
     }
     const validCode = validateCode(code);
     if (validCode) {
+      // Сохраняем введённое имя
+      const custom = getCustomNames();
+      custom[validCode] = name.trim();
+      saveCustomNames(custom);
       saveCode(validCode);
       navigate('/game');
     } else {
@@ -49,7 +58,7 @@ const AccessPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#2A168F] relative overflow-hidden px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#6838CE] relative overflow-hidden px-4">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-0 right-0 h-px bg-white opacity-10" />
         <div className="absolute top-3/4 left-0 right-0 h-px bg-white opacity-10" />
@@ -67,17 +76,25 @@ const AccessPage = () => {
         <div className="bg-[#1E0F6E] rounded-2xl border border-white/20 p-8 shadow-2xl w-full space-y-4">
           <div className="text-center">
             <span className="text-4xl">🔑</span>
-            <p className="text-white/70 text-sm mt-2">Введите код доступа ведущего</p>
+            <p className="text-white/70 text-sm mt-2">Вход для ведущего</p>
           </div>
+
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => { setName(e.target.value); setError(''); }}
+            placeholder="Ваше имя"
+            className="w-full p-3 rounded-lg border border-white/20 bg-white/10 text-white text-center text-lg placeholder:text-white/30 focus:ring-2 focus:ring-white/40 outline-none"
+            autoFocus
+          />
 
           <input
             type="text"
             value={code}
             onChange={(e) => { setCode(e.target.value.toUpperCase()); setError(''); }}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            placeholder="Например: ANNA-7X"
+            placeholder="Код доступа"
             className="w-full p-3 rounded-lg border border-white/20 bg-white/10 text-white text-center text-lg font-mono tracking-widest placeholder:text-white/30 focus:ring-2 focus:ring-white/40 outline-none"
-            autoFocus
           />
 
           {error && (
@@ -95,7 +112,7 @@ const AccessPage = () => {
             size="xl"
             className="w-full bg-white text-[#2A168F] hover:bg-white/90 font-bold"
             onClick={handleSubmit}
-            disabled={!code.trim()}
+            disabled={!code.trim() || !name.trim()}
           >
             Войти
           </Button>

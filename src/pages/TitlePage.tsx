@@ -14,7 +14,10 @@ const TitlePage = () => {
 
   if (!isAuthorized()) return null;
 
-  const hostName = getSavedCode() ? getHostName(getSavedCode()!) : '';
+  const savedCode = getSavedCode();
+  const hostName = savedCode === 'MASTER'
+    ? (localStorage.getItem('game-host-display-name') || 'Администратор')
+    : savedCode ? getHostName(savedCode) : '';
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#6838CE] relative overflow-hidden">
