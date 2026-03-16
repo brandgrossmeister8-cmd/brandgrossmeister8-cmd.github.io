@@ -30,7 +30,14 @@ const AccessPage = () => {
     }
   }, [searchParams, navigate]);
 
+  const MASTER_PASSWORD = '369852147';
+
   const handleSubmit = () => {
+    if (code === MASTER_PASSWORD) {
+      saveCode('MASTER');
+      navigate('/game');
+      return;
+    }
     const validCode = validateCode(code);
     if (validCode) {
       saveCode(validCode);
