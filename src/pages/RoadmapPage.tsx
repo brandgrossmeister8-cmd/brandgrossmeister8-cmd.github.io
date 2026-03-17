@@ -182,7 +182,7 @@ const RoadmapPage = () => {
                 `<p style="font-size:7px;color:#999">руб</p></div>`
               ).join('') +
               '</div>' +
-              '<p style="font-size:7px;color:#aaa;text-align:center;margin-top:4px">Не учитываются сезонность, масштабирование и другие немаркетинговые факторы</p>' +
+              '<p style="font-size:7px;color:#aaa;text-align:center;margin-top:4px">Не учитываются сезонность, масштабирование, немаркетинговые факторы и прочие форс-мажорные обстоятельства</p>' +
               '</div>';
           })()}
           <div style="text-align:center;margin-top:10px;padding:6px;border-top:1px solid #e5e7eb">
@@ -534,7 +534,7 @@ const RoadmapPage = () => {
                     })()}
 
                     <p className="text-[10px] text-muted-foreground text-center">
-                      В расчёте не учитываются сезонность, масштабирование бизнеса и другие факторы, которые помимо маркетинга могут повлиять на рост продаж
+                      В расчёте не учитываются сезонность, масштабирование, немаркетинговые факторы и прочие форс-мажорные обстоятельства
                     </p>
 
                     {adBudget === '' || adBudget === '0' ? (
