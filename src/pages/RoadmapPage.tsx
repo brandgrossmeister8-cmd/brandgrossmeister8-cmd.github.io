@@ -150,14 +150,43 @@ const RoadmapPage = () => {
           <span class="car">🏎️</span>
           <p style="font-size:14px;font-weight:600;margin-top:4px">${playerName}</p>
           <p style="font-size:10px;opacity:0.8">${playerBusiness || ''} | ${today}</p>
+          <p style="font-size:9px;opacity:0.6;margin-top:4px">Ведущий: ${hostName || ''}${hostTg ? ' | TG: @' + hostTg : ''}</p>
         </div>
         <div class="content">
           <div style="text-align:center;padding:8px;border-radius:8px;background:#f8f5ff;border:1.5px solid #6838CE40;margin-bottom:10px">
             <p style="font-size:10px;color:#666">Текущая скорость: <strong>${speed} км/ч</strong> → Потенциал: <strong style="color:#166534">120 км/ч</strong></p>
           </div>
           ${stagesHtml}
+          ${(() => {
+            const check = parseFloat(avgCheck) || 0;
+            const clients = parseFloat(clientsPerMonth) || 0;
+            const budget = parseFloat(adBudget) || 0;
+            if (!check || !clients) return '';
+            const r = calcResults();
+            const yearTotal = Array.from({ length: 12 }, (_, m) => {
+              const mo = m + 1;
+              return (mo >= 3 ? r.budgetSaving : 0) + (mo >= 8 ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
+            }).reduce((a, b) => a + b, 0);
+            const scenarios = [
+              { label: 'Пессимистичный (40%)', val: Math.round(yearTotal * 0.4), color: '#854d0e' },
+              { label: 'Средневзвешенный (70%)', val: Math.round(yearTotal * 0.7), color: '#2A168F' },
+              { label: 'Оптимистичный (100%)', val: Math.round(yearTotal), color: '#166534' },
+            ];
+            return '<div style="border:1.5px solid #2A168F;border-radius:8px;padding:8px 10px;margin-top:8px;background:#f8f5ff">' +
+              '<p style="font-weight:bold;font-size:10px;color:#2A168F;margin-bottom:6px">ПРОГНОЗ ЗА 12 МЕСЯЦЕВ</p>' +
+              '<div style="display:flex;gap:6px">' +
+              scenarios.map(s =>
+                `<div style="flex:1;text-align:center;padding:6px;border-radius:6px;border:1px solid ${s.color}30;background:white">` +
+                `<p style="font-size:8px;color:${s.color};font-weight:bold">${s.label}</p>` +
+                `<p style="font-size:14px;font-weight:800;color:${s.color}">+${new Intl.NumberFormat('ru-RU').format(s.val)}</p>` +
+                `<p style="font-size:7px;color:#999">руб</p></div>`
+              ).join('') +
+              '</div>' +
+              '<p style="font-size:7px;color:#aaa;text-align:center;margin-top:4px">Не учитываются сезонность, масштабирование и другие немаркетинговые факторы</p>' +
+              '</div>';
+          })()}
           <div style="text-align:center;margin-top:10px;padding:6px;border-top:1px solid #e5e7eb">
-            <p style="font-size:8px;color:#aaa">ИМШИНЕЦКАЯ И ПАРТНЕРЫ | Маркетинговый заезд${hostTg ? ' | Ведущий: @' + hostTg : ''}</p>
+            <p style="font-size:8px;color:#aaa">ИМШИНЕЦКАЯ И ПАРТНЕРЫ | Маркетинговый заезд</p>
             <p style="font-size:7px;color:#ccc">Игра создана на основе авторской технологии системного продвижения Ии Имшинецкой</p>
           </div>
         </div>
