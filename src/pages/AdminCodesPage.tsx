@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ACCESS_CODES, getAllCodes, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode, addCode, generateUniqueCode, getExtraCodes, removeExtraCode, getTelegramLinks, saveTelegramLinks } from '@/config/accessCodes';
+import { getAllCodes, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode, addHost, removeHost, getTelegramLinks, saveTelegramLinks } from '@/config/accessCodes';
 import { BRAND_NAME } from '@/config/stages';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -18,6 +18,7 @@ const AdminCodesPage = () => {
   const [editValue, setEditValue] = useState('');
   const [disabledCodes, setDisabledCodes] = useState<string[]>(getDisabledCodes);
   const [newName, setNewName] = useState('');
+  const [newTg, setNewTg] = useState('');
   const [allCodes, setAllCodes] = useState<Record<string, string>>(getAllCodes);
   const [tgLinks, setTgLinks] = useState<Record<string, string>>(getTelegramLinks);
   const [editingTg, setEditingTg] = useState<string | null>(null);
@@ -63,7 +64,7 @@ const AdminCodesPage = () => {
     setEditValue('');
   };
 
-  const getName = (code: string) => customNames[code] || allCodes[code] || ACCESS_CODES[code];
+  const getName = (code: string) => customNames[code] || allCodes[code] || 'Ведущий';
   const isDisabled = (code: string) => disabledCodes.includes(code);
   const getTg = (code: string) => tgLinks[code] || '';
 
@@ -89,6 +90,29 @@ const AdminCodesPage = () => {
       disableCode(code);
       setDisabledCodes(prev => [...prev, code]);
     }
+  };
+
+  const handleAddHost = () => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const code = addHost(trimmed);
+    // Сохраняем TG если указан
+    if (newTg.trim()) {
+      const clean = newTg.trim().replace('@', '');
+      const updated = { ...tgLinks, [code]: clean };
+      setTgLinks(updated);
+      saveTelegramLinks(updated);
+    }
+    setAllCodes(getAllCodes());
+    setNewName('');
+    setNewTg('');
+  };
+
+  const handleDelete = (code: string) => {
+    removeHost(code);
+    setAllCodes(getAllCodes());
+    setTgLinks(getTelegramLinks());
+    setDisabledCodes(getDisabledCodes());
   };
 
   if (!authorized) {
@@ -129,51 +153,47 @@ const AdminCodesPage = () => {
   }
 
   const codes = Object.keys(allCodes);
-  const extraCodes = getExtraCodes();
-
-  const handleAddHost = () => {
-    const trimmed = newName.trim();
-    if (!trimmed) return;
-    const code = generateUniqueCode();
-    addCode(code, trimmed);
-    setAllCodes(getAllCodes());
-    setNewName('');
-  };
-
-  const handleDeleteExtra = (code: string) => {
-    removeExtraCode(code);
-    setAllCodes(getAllCodes());
-  };
 
   return (
     <div className="min-h-screen bg-[#2A168F] px-4 py-8">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white">{BRAND_NAME}</h1>
-          <p className="text-white/60 text-sm mt-1">Управление кодами доступа ведущих</p>
+          <p className="text-white/60 text-sm mt-1">Управление ведущими</p>
         </div>
 
         <div className="bg-[#1E0F6E] rounded-2xl border border-white/20 p-6 shadow-2xl space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white">Ведущие ({codes.filter(c => !isDisabled(c)).length} из {codes.length})</h2>
-          </div>
+          <h2 className="text-lg font-bold text-white">Ведущие ({codes.filter(c => !isDisabled(c)).length} активных)</h2>
 
-          <div className="flex gap-2">
+          {/* Добавление нового ведущего */}
+          <div className="space-y-2 p-4 rounded-xl bg-white/5 border border-white/10">
+            <p className="text-xs text-white/50 font-medium">Добавить нового ведущего</p>
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
+              placeholder="Имя ведущего"
+              className="w-full p-3 rounded-lg border border-white/20 bg-white/10 text-white text-sm focus:ring-2 focus:ring-white/40 outline-none placeholder:text-white/30"
+            />
+            <input
+              value={newTg}
+              onChange={(e) => setNewTg(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddHost()}
-              placeholder="Имя нового ведущего"
-              className="flex-1 p-3 rounded-lg border border-white/20 bg-white/10 text-white text-sm focus:ring-2 focus:ring-white/40 outline-none placeholder:text-white/30"
+              placeholder="Telegram (например @username)"
+              className="w-full p-3 rounded-lg border border-white/20 bg-white/10 text-white text-sm focus:ring-2 focus:ring-white/40 outline-none placeholder:text-white/30"
             />
             <Button
-              className="bg-white text-[#2A168F] hover:bg-white/90 font-bold shrink-0"
+              className="w-full bg-white text-[#2A168F] hover:bg-white/90 font-bold"
               onClick={handleAddHost}
               disabled={!newName.trim()}
             >
-              + Добавить
+              + Добавить ведущего
             </Button>
           </div>
+
+          {/* Список ведущих */}
+          {codes.length === 0 && (
+            <p className="text-white/40 text-sm text-center py-4">Нет ведущих. Добавьте первого.</p>
+          )}
 
           <div className="space-y-3">
             {codes.map((code) => {
@@ -190,41 +210,18 @@ const AdminCodesPage = () => {
                           className="flex-1 p-2 rounded-lg border border-white/20 bg-white/10 text-white text-sm focus:ring-2 focus:ring-white/40 outline-none"
                           autoFocus
                         />
-                        <Button
-                          size="sm"
-                          className="bg-white text-[#2A168F] hover:bg-white/90 shrink-0"
-                          onClick={() => saveEdit(code)}
-                        >
-                          ✓
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-white/20 text-white hover:bg-white/10 shrink-0"
-                          onClick={() => setEditingCode(null)}
-                        >
-                          ✕
-                        </Button>
+                        <button onClick={() => saveEdit(code)} className="text-green-400 text-sm">✓</button>
+                        <button onClick={() => setEditingCode(null)} className="text-white/40 text-sm">✕</button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <p className={`font-bold ${disabled ? 'text-white/40 line-through' : 'text-white'}`}>{getName(code)}</p>
                         {!disabled && (
-                          <button
-                            onClick={() => startEdit(code, getName(code))}
-                            className="text-white/40 hover:text-white/80 text-xs transition-colors"
-                            title="Изменить имя"
-                          >
-                            ✏️
-                          </button>
+                          <button onClick={() => startEdit(code, getName(code))} className="text-white/40 hover:text-white/80 text-xs">✏️</button>
                         )}
                       </div>
                     )}
-                    <p className="text-white/50 font-mono text-sm">{code}
-                      {customNames[code] && customNames[code] !== allCodes[code] && (
-                        <span className="text-white/30 ml-2">(было: {allCodes[code]})</span>
-                      )}
-                    </p>
+                    <p className="text-white/50 font-mono text-sm">Код: {code}</p>
                     {!disabled && (
                       editingTg === code ? (
                         <div className="flex items-center gap-2 mt-1">
@@ -268,8 +265,7 @@ const AdminCodesPage = () => {
                         Отключить
                       </Button>
                     )}
-                    <Button size="sm" variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                      onClick={() => { if (extraCodes[code]) { handleDeleteExtra(code); } else { toggleCode(code); if (!disabled) disableCode(code); } }}>
+                    <Button size="sm" variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10" onClick={() => handleDelete(code)}>
                       Удалить
                     </Button>
                   </div>

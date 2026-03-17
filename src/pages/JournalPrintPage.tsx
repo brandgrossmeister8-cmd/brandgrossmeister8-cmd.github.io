@@ -256,6 +256,7 @@ const JournalPrintPage = () => {
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">{BRAND_NAME} | {GAME_TITLE}</p>
+          <p className="text-center text-[10px] text-gray-300 mt-1">Игра создана на основе авторской технологии системного продвижения Ии Имшинецкой</p>
         </div>
       </div>
     </div>

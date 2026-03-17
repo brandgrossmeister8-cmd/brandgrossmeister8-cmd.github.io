@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
-import { isAuthorized, getSavedCode, getHostName, getCurrentHostTelegram } from '@/config/accessCodes';
+import { isAuthorized, getSavedCode, getHostName, getCurrentHostTelegram, getAllCodes } from '@/config/accessCodes';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { RaceTrack } from '@/components/game/RaceTrack';
 import { TimerDisplay } from '@/components/game/TimerDisplay';
@@ -130,9 +130,16 @@ const AdminOneScreenPage = () => {
 
   const today = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
   const savedHostCode = getSavedCode();
-  const hostDisplayName = savedHostCode === 'MASTER'
-    ? (localStorage.getItem('game-host-display-name') || 'Ведущий')
-    : savedHostCode ? getHostName(savedHostCode) : 'Ведущий';
+  const hostDisplayName = (() => {
+    if (savedHostCode === 'MASTER') {
+      const stored = localStorage.getItem('game-host-display-name');
+      if (stored) return stored;
+      // Берём первое имя из таблицы админки
+      const all = Object.values(getAllCodes());
+      return all[0] || 'Ведущий';
+    }
+    return savedHostCode ? getHostName(savedHostCode) : 'Ведущий';
+  })();
 
   const formatAnswerText = (answer: unknown, stageIdx: number): string => {
     if (answer === undefined || answer === null) return '';
@@ -194,7 +201,7 @@ const AdminOneScreenPage = () => {
           <span class="car">🏎️</span>
           <p style="font-size:16px;font-weight:600;margin-top:4px">${player.name}</p>
           <p style="font-size:12px;opacity:0.8">${player.business || ''}</p>
-          <p style="font-size:10px;opacity:0.6;margin-top:8px">${today} | Ведущий: ${hostDisplayName}</p>
+          <p style="font-size:10px;opacity:0.6;margin-top:8px">${today} | Ведущий: ${hostDisplayName}${getCurrentHostTelegram() ? ' | TG: @' + getCurrentHostTelegram() : ''}</p>
         </div>
         <div class="content">
           <div class="speed-block">
@@ -219,6 +226,7 @@ const AdminOneScreenPage = () => {
           ${strongHtml}${weakHtml}
           <div class="footer">
             <p style="font-size:9px;color:#aaa">ИМШИНЕЦКАЯ И ПАРТНЕРЫ | Маркетинговый заезд</p>
+            <p style="font-size:8px;color:#bbb">Игра создана на основе авторской технологии системного продвижения Ии Имшинецкой</p>
           </div>
         </div>
       </div>
@@ -383,6 +391,7 @@ const AdminOneScreenPage = () => {
                               deltas: p.lastSpeedDelta || {},
                               answers: p.answers || {},
                               hostTg: getCurrentHostTelegram(),
+                              hostName: hostDisplayName,
                             }})}
                           >
                             Увидеть потенциал

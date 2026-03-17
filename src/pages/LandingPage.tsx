@@ -207,8 +207,33 @@ const LandingPage = () => {
                 <div className="absolute left-4 md:left-6 top-3 w-4 h-4 rounded-full bg-spectator border-2 border-background" />
                 <div className="flex items-center gap-3 p-5">
                   <Flag className="w-6 h-6 text-white" />
-                  <span className="font-bold text-primary-foreground text-lg">Финиш — итоговый рейтинг</span>
+                  <div>
+                    <span className="font-bold text-primary-foreground text-lg">ФИНИШ</span>
+                    <p className="text-xs text-white/60">Итоговый рейтинг</p>
+                  </div>
                 </div>
+              </motion.div>
+
+              {/* Roadmap */}
+              <motion.div
+                className="relative pl-16 md:pl-20"
+                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={7}
+              >
+                <div className="absolute left-4 md:left-6 top-3 w-4 h-4 rounded-full bg-gradient-brand border-2 border-background shadow-brand" />
+                <Card className="bg-card/5 border-dashboard-border backdrop-blur-sm">
+                  <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <MapPin className="w-5 h-5 text-white shrink-0" />
+                      <div>
+                        <h3 className="font-bold text-white">ПОТЕНЦИАЛ РОСТА</h3>
+                        <p className="text-xs text-white">Калькулятор упущенной выгоды</p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-white">
+                      Калькулятор
+                    </span>
+                  </CardContent>
+                </Card>
               </motion.div>
             </div>
           </div>
