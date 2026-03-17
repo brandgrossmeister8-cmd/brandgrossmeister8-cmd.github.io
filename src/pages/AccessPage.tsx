@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 
 const MASTER_PASSWORD = '369852147';
 const HOST_NAME_KEY = 'game-host-display-name';
+const HOST_TG_KEY = 'game-host-telegram';
 
 const AccessPage = () => {
   const navigate = useNavigate();
@@ -45,7 +46,6 @@ const AccessPage = () => {
     }
     const validCode = validateCode(code);
     if (validCode) {
-      // Сохраняем введённое имя
       const custom = getCustomNames();
       custom[validCode] = name.trim();
       saveCustomNames(custom);

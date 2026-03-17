@@ -111,7 +111,7 @@ const InstructionsPage = () => {
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2 pr-4">2</td>
-                    <td className="py-2 pr-4 font-medium">Брендск</td>
+                    <td className="py-2 pr-4 font-medium">Продукто-Брендск</td>
                     <td className="py-2 pr-4">30 сек</td>
                     <td className="py-2">Распределите 100% между Брендом и Ассортиментом</td>
                   </tr>
@@ -119,7 +119,7 @@ const InstructionsPage = () => {
                     <td className="py-2 pr-4">3</td>
                     <td className="py-2 pr-4 font-medium">Зачемград</td>
                     <td className="py-2 pr-4">3 мин</td>
-                    <td className="py-2">Зачем клиенты покупают ваш продукт? (текстовый ответ)</td>
+                    <td className="py-2">Расскажите, зачем людям ваш продукт? (текстовый ответ)</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2 pr-4">4</td>

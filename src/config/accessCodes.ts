@@ -20,6 +20,31 @@ const STORAGE_KEY = 'game-access-code';
 const NAMES_KEY = 'game-custom-names';
 const DISABLED_KEY = 'game-disabled-codes';
 const EXTRA_CODES_KEY = 'game-extra-codes';
+const TG_KEY = 'game-host-telegrams';
+
+export function getTelegramLinks(): Record<string, string> {
+  try {
+    const saved = localStorage.getItem(TG_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+}
+
+export function saveTelegramLinks(links: Record<string, string>) {
+  localStorage.setItem(TG_KEY, JSON.stringify(links));
+}
+
+export function getHostTelegram(code: string): string {
+  const upper = code.trim().toUpperCase();
+  const links = getTelegramLinks();
+  return links[upper] || '';
+}
+
+export function getCurrentHostTelegram(): string {
+  const code = getSavedCode();
+  if (!code) return '';
+  if (code === 'MASTER') return localStorage.getItem('game-host-telegram') || '';
+  return getHostTelegram(code);
+}
 
 export function getExtraCodes(): Record<string, string> {
   try {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ACCESS_CODES, getAllCodes, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode, addCode, generateUniqueCode, getExtraCodes, removeExtraCode } from '@/config/accessCodes';
+import { ACCESS_CODES, getAllCodes, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode, addCode, generateUniqueCode, getExtraCodes, removeExtraCode, getTelegramLinks, saveTelegramLinks } from '@/config/accessCodes';
 import { BRAND_NAME } from '@/config/stages';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -19,6 +19,9 @@ const AdminCodesPage = () => {
   const [disabledCodes, setDisabledCodes] = useState<string[]>(getDisabledCodes);
   const [newName, setNewName] = useState('');
   const [allCodes, setAllCodes] = useState<Record<string, string>>(getAllCodes);
+  const [tgLinks, setTgLinks] = useState<Record<string, string>>(getTelegramLinks);
+  const [editingTg, setEditingTg] = useState<string | null>(null);
+  const [tgValue, setTgValue] = useState('');
 
   const handleLogin = () => {
     if (password === MASTER_PASSWORD) {
@@ -60,8 +63,23 @@ const AdminCodesPage = () => {
     setEditValue('');
   };
 
-  const getName = (code: string) => customNames[code] || ACCESS_CODES[code];
+  const getName = (code: string) => customNames[code] || allCodes[code] || ACCESS_CODES[code];
   const isDisabled = (code: string) => disabledCodes.includes(code);
+  const getTg = (code: string) => tgLinks[code] || '';
+
+  const startEditTg = (code: string) => {
+    setEditingTg(code);
+    setTgValue(getTg(code));
+  };
+
+  const saveEditTg = (code: string) => {
+    const clean = tgValue.trim().replace('@', '');
+    const updated = { ...tgLinks, [code]: clean };
+    setTgLinks(updated);
+    saveTelegramLinks(updated);
+    setEditingTg(null);
+    setTgValue('');
+  };
 
   const toggleCode = (code: string) => {
     if (isDisabled(code)) {
@@ -203,6 +221,28 @@ const AdminCodesPage = () => {
                       </div>
                     )}
                     <p className="text-white/50 font-mono text-sm">{code}</p>
+                    {!disabled && (
+                      editingTg === code ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-white/40 text-xs">TG:</span>
+                          <input
+                            value={tgValue}
+                            onChange={(e) => setTgValue(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && saveEditTg(code)}
+                            placeholder="username"
+                            className="flex-1 p-1 rounded border border-white/20 bg-white/10 text-white text-xs outline-none"
+                            autoFocus
+                          />
+                          <button onClick={() => saveEditTg(code)} className="text-green-400 text-xs">✓</button>
+                          <button onClick={() => setEditingTg(null)} className="text-white/40 text-xs">✕</button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-white/40 text-xs">TG: {getTg(code) ? `@${getTg(code)}` : 'не указан'}</span>
+                          <button onClick={() => startEditTg(code)} className="text-white/30 hover:text-white/70 text-xs">✏️</button>
+                        </div>
+                      )
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     {!disabled && (

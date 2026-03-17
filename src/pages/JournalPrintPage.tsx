@@ -80,7 +80,7 @@ const JournalPrintPage = () => {
           <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 rounded-full bg-[#2A168F] text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
             <div>
-              <h3 className="font-bold text-lg">БРЕНДСК</h3>
+              <h3 className="font-bold text-lg">ПРОДУКТО-БРЕНДСК</h3>
               <p className="text-sm text-gray-500">Распределите 100% между Брендом и Ассортиментом (30 сек)</p>
             </div>
           </div>
@@ -114,7 +114,7 @@ const JournalPrintPage = () => {
             <div className="w-8 h-8 rounded-full bg-[#2A168F] text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
             <div>
               <h3 className="font-bold text-lg">ЗАЧЕМГРАД</h3>
-              <p className="text-sm text-gray-500">Зачем клиенты покупают ваш продукт? (3 мин)</p>
+              <p className="text-sm text-gray-500">Расскажите, зачем людям ваш продукт? (3 мин)</p>
             </div>
           </div>
           <div className="border-2 border-gray-300 rounded-lg p-4">

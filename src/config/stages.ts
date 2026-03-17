@@ -20,7 +20,7 @@ export const STAGES: StageConfig[] = [
   {
     index: 1,
     title: 'Этап 2',
-    cityName: 'Брендск',
+    cityName: 'Продукто-Брендск',
     timerSeconds: 30,
     question: 'Распределите 100% между Брендом и Ассортиментом:',
     answerType: 'slider',
@@ -31,7 +31,7 @@ export const STAGES: StageConfig[] = [
     title: 'Этап 3',
     cityName: 'Зачемград',
     timerSeconds: 180,
-    question: 'Зачем клиенты покупают ваш продукт?',
+    question: 'Расскажите, зачем людям ваш продукт?',
     answerType: 'textarea',
     placeholder: 'Опишите подробно, зачем клиенты покупают ваш продукт...',
   },

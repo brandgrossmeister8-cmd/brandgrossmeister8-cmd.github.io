@@ -15,6 +15,7 @@ import SpectatorViewPage from "./pages/SpectatorViewPage";
 import AccessPage from "./pages/AccessPage";
 import AdminCodesPage from "./pages/AdminCodesPage";
 import InstructionsPage from "./pages/InstructionsPage";
+import RoadmapPage from "./pages/RoadmapPage";
 import JournalPrintPage from "./pages/JournalPrintPage";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/spectator" element={<SpectatorViewPage />} />
             <Route path="/admin-codes" element={<AdminCodesPage />} />
             <Route path="/instructions" element={<InstructionsPage />} />
+            <Route path="/roadmap" element={<RoadmapPage />} />
             <Route path="/journal" element={<JournalPrintPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

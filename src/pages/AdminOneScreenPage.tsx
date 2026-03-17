@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
-import { isAuthorized, getSavedCode, getHostName } from '@/config/accessCodes';
+import { isAuthorized, getSavedCode, getHostName, getCurrentHostTelegram } from '@/config/accessCodes';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { RaceTrack } from '@/components/game/RaceTrack';
 import { TimerDisplay } from '@/components/game/TimerDisplay';
@@ -75,7 +75,8 @@ const AdminOneScreenPage = () => {
 
   const [hiddenPlayers, setHiddenPlayers] = useState<Record<string, boolean>>({});
   const [printingPlayer, setPrintingPlayer] = useState<string | null>(null);
-  const [emailCopied, setEmailCopied] = useState<string | null>(null); // хранит email для индикации
+  const [emailCopied, setEmailCopied] = useState<string | null>(null);
+  const [notAllScoredWarning, setNotAllScoredWarning] = useState(false);
 
   const stageRecommendations: Record<number, { city: string; strong: string; weak: string }> = {
     0: {
@@ -84,7 +85,7 @@ const AdminOneScreenPage = () => {
       weak: 'Вы не до конца понимаете, что вы продаёте. Соответственно, ваша система продвижения не может быть выстроена эффективно.',
     },
     1: {
-      city: 'БРЕНДСК',
+      city: 'ПРОДУКТО-БРЕНДСК',
       strong: 'Вы правильно выбрали приоритеты — не фокусируетесь на отдельных позициях, а продвигаете бренд.',
       weak: 'Вы фокусируетесь на отдельных продуктах, тем самым нерационально используете бюджет. При добавлении каждой новой позиции вам придётся всё начинать заново.',
     },
@@ -127,13 +128,36 @@ const AdminOneScreenPage = () => {
     setHiddenPlayers(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const generatePlayerPdfHtml = (player: { name: string; business?: string; speed: number; lastSpeedDelta?: Record<number, 10 | -10> }) => {
+  const today = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  const savedHostCode = getSavedCode();
+  const hostDisplayName = savedHostCode === 'MASTER'
+    ? (localStorage.getItem('game-host-display-name') || 'Ведущий')
+    : savedHostCode ? getHostName(savedHostCode) : 'Ведущий';
+
+  const formatAnswerText = (answer: unknown, stageIdx: number): string => {
+    if (answer === undefined || answer === null) return '';
+    if (typeof answer === 'string') return answer;
+    if (typeof answer === 'number') {
+      const s = STAGES[stageIdx];
+      if (s?.sliderLabels) return `${s.sliderLabels[0]}: ${answer}% / ${s.sliderLabels[1]}: ${100 - answer}%`;
+      return `${answer}%`;
+    }
+    if (typeof answer === 'object') {
+      const obj = answer as Record<string, unknown>;
+      if (obj.type) {
+        const params = (obj.params || obj.fields) as Record<string, string> | undefined;
+        if (params) {
+          const lines = Object.entries(params).filter(([,v]) => v && String(v).trim()).map(([,v]) => String(v));
+          return `${obj.type}: ${lines.join(', ')}`;
+        }
+        return String(obj.type);
+      }
+    }
+    return String(answer);
+  };
+
+  const generatePlayerPdfHtml = (player: { name: string; business?: string; speed: number; answers: Record<number, unknown>; lastSpeedDelta?: Record<number, 10 | -10> }) => {
     const { strong, weak } = getPlayerResults(player.lastSpeedDelta);
-    const today = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-    const savedCode = getSavedCode();
-    const hostDisplayName = savedCode === 'MASTER'
-      ? (localStorage.getItem('game-host-display-name') || 'Ведущий')
-      : savedCode ? getHostName(savedCode) : 'Ведущий';
     const strongHtml = strong.length > 0 ? `
       <div style="border:1.5px solid #22c55e;border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#f0fdf4">
         <p style="font-weight:bold;color:#166534;margin-bottom:6px;font-size:12px">&#x2B06; СИЛЬНЫЕ СТОРОНЫ</p>
@@ -178,6 +202,20 @@ const AdminOneScreenPage = () => {
             <p style="font-size:40px;font-weight:800;color:${speedColor};line-height:1.1">${player.speed} км/ч</p>
             <p style="font-size:11px;color:#666;font-style:italic">${getInterpretation(player.speed)}</p>
           </div>
+          <div style="margin-bottom:10px">
+            <p style="font-weight:bold;font-size:12px;margin-bottom:6px">ОТВЕТЫ ИГРОКА</p>
+            ${STAGES.map((s, i) => {
+              const ans = formatAnswerText(player.answers[i], i);
+              const delta = player.lastSpeedDelta?.[i];
+              const color = delta === 10 ? '#166534' : delta === -10 ? '#991b1b' : '#666';
+              const bg = delta === 10 ? '#f0fdf4' : delta === -10 ? '#fef2f2' : '#f9fafb';
+              return ans ? `<div style="padding:4px 8px;border-radius:6px;background:${bg};margin-bottom:4px;border:1px solid ${color}20">
+                <span style="font-size:10px;font-weight:bold;color:${color}">${s.cityName.toUpperCase()}:</span>
+                <span style="font-size:10px;color:#333"> ${ans}</span>
+                ${delta ? `<span style="font-size:9px;color:${color}"> (${delta > 0 ? '+' : ''}${delta} км/ч)</span>` : ''}
+              </div>` : '';
+            }).join('')}
+          </div>
           ${strongHtml}${weakHtml}
           <div class="footer">
             <p style="font-size:9px;color:#aaa">ИМШИНЕЦКАЯ И ПАРТНЕРЫ | Маркетинговый заезд</p>
@@ -187,7 +225,7 @@ const AdminOneScreenPage = () => {
       </body></html>`;
   };
 
-  const downloadPlayerPdf = (player: { name: string; business?: string; speed: number; lastSpeedDelta?: Record<number, 10 | -10> }) => {
+  const downloadPlayerPdf = (player: { name: string; business?: string; speed: number; answers: Record<number, unknown>; lastSpeedDelta?: Record<number, 10 | -10> }) => {
     const html = generatePlayerPdfHtml(player);
     // Добавляем кнопку "Вернуться" в HTML
     const htmlWithButton = html.replace('</body>', `
@@ -330,10 +368,24 @@ const AdminOneScreenPage = () => {
                           <p className="text-xs opacity-60 italic">Нет данных по этапам</p>
                         )}
 
-                        {/* Кнопка скачивания */}
-                        <div className="pt-2 border-t border-border/30">
-                          <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => downloadPlayerPdf(p)}>
+                        {/* Кнопки действий */}
+                        <div className="flex gap-2 pt-2 border-t border-border/30">
+                          <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={() => downloadPlayerPdf(p)}>
                             Скачать PDF
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="flex-1 text-xs bg-[#2A168F] text-white hover:bg-[#2A168F]/90"
+                            onClick={() => navigate('/roadmap', { state: {
+                              playerName: p.name,
+                              playerBusiness: p.business,
+                              speed: p.speed,
+                              deltas: p.lastSpeedDelta || {},
+                              answers: p.answers || {},
+                              hostTg: getCurrentHostTelegram(),
+                            }})}
+                          >
+                            Увидеть потенциал
                           </Button>
                         </div>
                       </>
@@ -370,12 +422,12 @@ const AdminOneScreenPage = () => {
 
   const explainCard = (label: string) => {
     const t = label.toLowerCase();
-    if (t.includes('товар')) return 'Товар — это конкретный физический или цифровой продукт, который клиент получает в измеримом виде. Примеры: одежда, электроника, программное обеспечение. Ключевое отличие — клиент может его потрогать, измерить, сравнить с аналогами.';
-    if (t.includes('услуга')) return 'Услуга — это действие или работа, которую вы выполняете для клиента. Примеры: консалтинг, ремонт, обучение. Особенность — результат неотделим от процесса, клиент оценивает качество в момент получения.';
-    if (t.includes('информация')) return 'Информация — это знания, методики, данные или контент, который клиент применяет самостоятельно. Примеры: курсы, аналитические отчёты, базы данных. Ценность — в уникальности и применимости знаний.';
-    if (t.includes('технолог')) return 'Технология — это воспроизводимый процесс с понятными шагами и предсказуемым результатом. Примеры: франшиза, лицензия на метод, SaaS-платформа. Клиент покупает не продукт, а способ достижения результата.';
-    if (t.includes('сервис')) return 'Сервис — это сопровождение и удобство использования основного предложения. Примеры: техподдержка, доставка, гарантийное обслуживание. Сервис повышает ценность основного продукта и формирует лояльность.';
-    if (t.includes('сырье')) return 'Сырье — это базовый материал или компонент, из которого создаётся конечный продукт. Примеры: ткани для пошива, ингредиенты для производства, заготовки. Конкурентное преимущество — в качестве, стабильности поставок и цене.';
+    if (t.includes('товар')) return 'Товар — физическая вещь, которую можно взять, потрогать, унести.';
+    if (t.includes('услуга')) return 'Услуга — работа с ответственностью за результат.';
+    if (t.includes('информация')) return 'Информация — передача данных или знаний без ответственности за результат.';
+    if (t.includes('технолог')) return 'Технология — упакованные знания и опыт, которые работают без участия автора.';
+    if (t.includes('сервис')) return 'Сервис — повторяющийся процесс, который делается одинаково для каждого клиента.';
+    if (t.includes('сырье')) return 'Сырье — продают все и везде, ноунейм. Покупатель выбирает только по цене.';
     if (t.includes('зовем всех')) return 'Массовая стратегия охвата: широкий поток, но ниже точность попадания в целевую аудиторию. Большие бюджеты на рекламу, высокая стоимость привлечения одного клиента.';
     if (t.includes('приходят сами')) return 'Пассивная стратегия: зависимость от сарафанного радио и случайного входящего потока. Низкие затраты, но непредсказуемый результат и сложность масштабирования.';
     if (t.includes('только тех')) return 'Целевая стратегия: фокус на клиентах, которым продукт нужен прямо сейчас. Точный таргетинг, высокая конверсия, оптимальное использование бюджета.';
@@ -396,11 +448,24 @@ const AdminOneScreenPage = () => {
             {!roomState.timer.running && <Button size="sm" variant="success" onClick={() => game.timerControl('start')}>▶ Включить таймер</Button>}
             {roomState.timer.running && <Button size="sm" variant="outline" onClick={() => game.timerControl('pause')}>⏸ Пауза</Button>}
             <Button size="sm" variant="outline" onClick={() => game.timerControl('restart')}>🔄 Сброс</Button>
-            <Button size="sm" variant="success" onClick={game.nextStage} disabled={roomState.currentStage >= STAGES.length - 1}>
+            <Button size="sm" variant="success" disabled={roomState.currentStage >= STAGES.length - 1} onClick={() => {
+              const allScored = roomState.players.every(p => p.lastSpeedDelta?.[roomState.currentStage] !== undefined);
+              if (!allScored) { setNotAllScoredWarning(true); setTimeout(() => setNotAllScoredWarning(false), 4000); return; }
+              game.nextStage();
+            }}>
               ➡ Следующий этап
             </Button>
-            <Button size="sm" variant="destructive" onClick={game.finishGame}>🏁 Завершить игру</Button>
+            <Button size="sm" variant="destructive" onClick={() => {
+              const allScored = roomState.players.every(p => p.lastSpeedDelta?.[roomState.currentStage] !== undefined);
+              if (!allScored) { setNotAllScoredWarning(true); setTimeout(() => setNotAllScoredWarning(false), 4000); return; }
+              game.finishGame();
+            }}>🏁 Завершить игру</Button>
           </div>
+          {notAllScoredWarning && (
+            <div className="rounded-lg bg-red-100 border border-red-300 px-4 py-2 text-sm text-red-800 font-medium animate-in fade-in">
+              Не все игроки оценены на этом этапе. Поставьте оценку каждому игроку в блоке ПИТ-СТОП.
+            </div>
+          )}
           <RaceTrack players={roomState.players} compact />
         </CollapsibleBlock>
 
