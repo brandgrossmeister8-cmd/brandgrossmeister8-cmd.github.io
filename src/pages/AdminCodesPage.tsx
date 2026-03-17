@@ -220,7 +220,11 @@ const AdminCodesPage = () => {
                         )}
                       </div>
                     )}
-                    <p className="text-white/50 font-mono text-sm">{code}</p>
+                    <p className="text-white/50 font-mono text-sm">{code}
+                      {customNames[code] && customNames[code] !== allCodes[code] && (
+                        <span className="text-white/30 ml-2">(было: {allCodes[code]})</span>
+                      )}
+                    </p>
                     {!disabled && (
                       editingTg === code ? (
                         <div className="flex items-center gap-2 mt-1">
