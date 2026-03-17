@@ -43,7 +43,7 @@ const LobbyPage = () => {
 
         <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">
           <p className="text-sm text-muted-foreground">
-            Введите имя и бизнес каждого участника. После этого нажмите `Начать игру`.
+            Введите имя и бизнес каждого участника. После этого нажмите `Включить зажигание`.
           </p>
 
           <input
@@ -91,7 +91,7 @@ const LobbyPage = () => {
             onClick={handleStartGame}
             disabled={players.length === 0}
           >
-            Начать игру
+            Включить зажигание
           </Button>
 
           <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/rules')}>
@@ -149,7 +149,7 @@ const LobbyPage = () => {
 
         <div className="bg-card rounded-2xl border p-6 space-y-4 shadow-brand">
           <p className="text-sm text-muted-foreground">
-            Введите имя и бизнес каждого участника. После этого нажмите `Начать игру`.
+            Введите имя и бизнес каждого участника. После этого нажмите `Включить зажигание`.
           </p>
 
           <input
@@ -199,7 +199,7 @@ const LobbyPage = () => {
             onClick={handleStartGame}
             disabled={players.length === 0}
           >
-            Начать игру
+            Включить зажигание
           </Button>
 
           <Button
@@ -309,7 +309,7 @@ const LobbyPage = () => {
             onClick={handleStartGame}
             disabled={players.length === 0}
           >
-            Начать игру
+            Включить зажигание
           </Button>
           <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/rules')}>
             ← Далее назад

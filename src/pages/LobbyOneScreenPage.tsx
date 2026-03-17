@@ -72,7 +72,7 @@ const LobbyOneScreenPage = () => {
           </p>
 
           <Button variant="hero" className="w-full" onClick={() => { game.startGame(); navigate('/admin'); }} disabled={players.length === 0}>
-            Начать игру
+            Включить зажигание
           </Button>
         </div>
       </motion.div>

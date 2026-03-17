@@ -56,7 +56,7 @@ const AdminPanelPage = () => {
       <div className="min-h-screen bg-background px-4 py-6">
         <BrandHeader subtitle="Подготовка игры" compact />
         <div className="w-full mx-auto mt-4">
-          <p className="text-muted-foreground">Сначала добавьте игроков и нажмите `Начать игру`.</p>
+          <p className="text-muted-foreground">Сначала добавьте игроков и нажмите `Включить зажигание`.</p>
         </div>
       </div>
     );

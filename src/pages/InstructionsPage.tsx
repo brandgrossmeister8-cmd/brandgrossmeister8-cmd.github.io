@@ -34,7 +34,7 @@ const InstructionsPage = () => {
           <div className="rounded-xl border bg-card p-6 space-y-4">
             <h4 className="font-bold text-lg text-[#2A168F]">2. Вход в игру</h4>
             <ol className="list-decimal list-inside space-y-3 text-sm">
-              <li>Откройте сайт и нажмите <strong>«Начать игру»</strong></li>
+              <li>Откройте сайт и нажмите <strong>«Включить зажигание»</strong></li>
               <li>Введите <strong>ваше имя</strong> и <strong>код доступа</strong>, нажмите «Войти»</li>
               <li>Код запоминается в браузере — при следующем входе вводить не нужно</li>
             </ol>
@@ -47,7 +47,7 @@ const InstructionsPage = () => {
               <li>На странице <strong>«Правила»</strong> ознакомьте участников с правилами, нажмите «Далее»</li>
               <li>Введите <strong>имя</strong> и <strong>бизнес</strong> каждого участника</li>
               <li>Можно добавить <strong>до 6 игроков</strong></li>
-              <li>Нажмите <strong>«Начать игру»</strong></li>
+              <li>Нажмите <strong>«Включить зажигание»</strong></li>
             </ol>
           </div>
 
