@@ -14,6 +14,79 @@ const InstructionsPage = () => {
           <h2 className="text-3xl font-bold mt-2">Инструкция для ведущего</h2>
         </div>
 
+        {/* Цель игры */}
+        <section className="space-y-4">
+          <div className="rounded-xl border bg-card p-6 space-y-4">
+            <h4 className="font-bold text-lg text-[#2A168F]">Цель игры</h4>
+            <p className="text-sm">
+              «Маркетинговый заезд» — интерактивная бизнес-игра на основе технологии системного продвижения Ии Имшинецкой. За 20 минут каждый участник проходит 6 этапов-городов, каждый из которых проверяет один элемент его маркетинговой системы.
+            </p>
+            <div className="rounded-lg bg-muted/50 p-4 space-y-2">
+              <p className="text-sm font-bold text-[#2A168F]">Что получает предприниматель:</p>
+              <ul className="list-disc list-inside text-sm space-y-2">
+                <li><strong>Диагностику маркетинга</strong> — конкретные сильные стороны и зоны роста по 6 ключевым точкам: понимание продукта, бренд, ценность для клиента, стратегия привлечения, знание ЦА, системность</li>
+                <li><strong>Осознание цены ошибок</strong> — мультипликативная модель потерь наглядно показывает, что слабые точки не просто складываются, а перемножаются. При 3 зонах роста бизнес работает на ~50% потенциала, при 6 — на ~33%</li>
+                <li><strong>Расчёт в рублях</strong> — калькулятор упущенной выгоды переводит абстрактные «зоны роста» в конкретные деньги: сколько бизнес зарабатывает сейчас, сколько теряет из-за несистемности, и сколько может дополнительно заработать после внедрения</li>
+                <li><strong>Прогноз на 12 месяцев</strong> — три сценария (пессимистичный, средневзвешенный, оптимистичный) с момента внедрения системного продвижения</li>
+              </ul>
+            </div>
+            <div className="rounded-lg bg-[#f8f5ff] border border-[#2A168F]/20 p-4">
+              <p className="text-sm text-[#2A168F]">
+                <strong>Главная задача ведущего</strong> — помочь участнику пройти путь от «у меня всё нормально» к «я вижу, сколько денег оставляю на столе», и показать, что системный подход к продвижению — это не расход, а инвестиция с измеримой отдачей.
+              </p>
+            </div>
+          </div>
+
+          {/* 6 этапов-городов */}
+          <div className="rounded-xl border bg-card p-6 space-y-4">
+            <h4 className="font-bold text-lg text-[#2A168F]">6 этапов = 6 элементов системного маркетинга</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 pr-4">Город</th>
+                    <th className="text-left py-2 pr-4">Что проверяет</th>
+                    <th className="text-left py-2">Потери при слабом ответе</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-border/50">
+                    <td className="py-2 pr-4 font-medium">Ассортиминск</td>
+                    <td className="py-2 pr-4">Понимание продукта — знаете ли вы, ЧТО продаёте?</td>
+                    <td className="py-2 text-red-600 font-medium">−10%</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-2 pr-4 font-medium">Продукто-Брендск</td>
+                    <td className="py-2 pr-4">Бренд vs ассортимент — продвигаете бренд или отдельные позиции?</td>
+                    <td className="py-2 text-red-600 font-medium">−20%</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-2 pr-4 font-medium">Зачемград</td>
+                    <td className="py-2 pr-4">Ценность для клиента — зачем людям ваш продукт?</td>
+                    <td className="py-2 text-red-600 font-medium">−30%</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-2 pr-4 font-medium">Траффик-Сити</td>
+                    <td className="py-2 pr-4">Стратегия привлечения — зовёте всех или только целевых?</td>
+                    <td className="py-2 text-red-600 font-medium">−10%</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-2 pr-4 font-medium">Цалово</td>
+                    <td className="py-2 pr-4">Знание ЦА — кто ваш клиент, его портрет</td>
+                    <td className="py-2 text-red-600 font-medium">−10%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 pr-4 font-medium">Выборг</td>
+                    <td className="py-2 pr-4">Система vs креатив — строите систему или ставите на разовые вспышки?</td>
+                    <td className="py-2 text-red-600 font-medium">−20%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-muted-foreground">Потери применяются каскадно (мультипликативно): каждая следующая слабая точка снижает эффективность от оставшегося, а не от исходных 100%</p>
+          </div>
+        </section>
+
         {/* Подготовка */}
         <section className="space-y-4">
           <div className="rounded-xl border bg-card p-6 space-y-4">
