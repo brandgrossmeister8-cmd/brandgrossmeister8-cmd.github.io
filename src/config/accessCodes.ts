@@ -189,10 +189,7 @@ export function getHostTelegram(code: string): string {
 export function getCurrentHostTelegram(): string {
   const code = getSavedCode();
   if (!code) return '';
-  if (code === 'MASTER') {
-    const values = Object.values(cache.telegrams).filter(v => v);
-    return values[0] || '';
-  }
+  if (code === 'MASTER') return '';
   return getHostTelegram(code);
 }
 
