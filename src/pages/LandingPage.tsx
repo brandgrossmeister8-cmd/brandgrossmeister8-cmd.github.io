@@ -306,6 +306,7 @@ const LandingPage = () => {
             Администрирование
           </button>
         </div>
+        <p className="text-xs text-muted-foreground/60 text-center mt-4">Проект реализован Осмаевой Маргаритой — бренд-гроссмейстер, консультант по стратегическому маркетингу</p>
       </footer>
     </div>
   );

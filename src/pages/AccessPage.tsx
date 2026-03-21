@@ -26,7 +26,7 @@ const AccessPage = () => {
   useEffect(() => {
     if (!loaded) return;
     if (isAuthorized()) {
-      navigate('/game', { replace: true });
+      navigate('/', { replace: true });
       return;
     }
     const urlCode = searchParams.get('code');
@@ -37,7 +37,7 @@ const AccessPage = () => {
         const hostName = getHostName(valid);
         localStorage.setItem(HOST_NAME_KEY, hostName);
         saveCode(valid);
-        navigate('/game', { replace: true });
+        navigate('/', { replace: true });
       } else {
         setError('Код из ссылки недействителен');
       }
@@ -52,7 +52,7 @@ const AccessPage = () => {
     if (code === MASTER_PASSWORD) {
       localStorage.setItem(HOST_NAME_KEY, name.trim());
       saveCode('MASTER');
-      navigate('/game');
+      navigate('/');
       return;
     }
     const validCode = validateCode(code);
@@ -61,7 +61,7 @@ const AccessPage = () => {
       custom[validCode] = name.trim();
       saveCustomNames(custom);
       saveCode(validCode);
-      navigate('/game');
+      navigate('/');
     } else {
       setError('Неверный код доступа');
       setTimeout(() => setError(''), 3000);

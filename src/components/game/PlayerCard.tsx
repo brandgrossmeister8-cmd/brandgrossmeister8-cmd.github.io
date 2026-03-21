@@ -66,7 +66,7 @@ function formatAnswer(answer: unknown, stageConfig?: StageConfig): string {
           });
 
         const filledCount = lines.length + 1; // +1 за выбор рынка B2B/B2C
-        return `Рынок: ${obj.type} (${filledCount})\n${lines.join('\n')}`;
+        return `Итого х-к: ${filledCount}\nРынок: ${obj.type}\n${lines.join('\n')}`;
       }
     }
 

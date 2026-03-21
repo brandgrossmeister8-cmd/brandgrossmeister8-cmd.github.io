@@ -20,22 +20,27 @@ function CollapsibleBlock({
   open,
   onToggle,
   children,
+  headerAction,
 }: {
   title: string;
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  headerAction?: React.ReactNode;
 }) {
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors"
-      >
-        <h2 className="font-bold text-lg">{title}</h2>
-        {open ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
-      </button>
+      <div className="flex items-center justify-between px-4 py-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <h2 className="font-bold text-lg">{title}</h2>
+          {open ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+        </button>
+        {headerAction}
+      </div>
       {open && <div className="px-4 pb-4 space-y-3">{children}</div>}
     </div>
   );
@@ -390,7 +395,9 @@ const AdminOneScreenPage = () => {
   if (!stage) return <div className="min-h-screen flex items-center justify-center bg-background">Нет активного этапа</div>;
 
   const saveAnswer = (playerId: string) => {
-    const v = draftAnswers[playerId];
+    let v = draftAnswers[playerId];
+    // Для слайдера: если не трогали, значение по умолчанию 50
+    if ((v === null || v === undefined) && stage.answerType === 'slider') v = 50;
     if (v === null || v === undefined || v === '') return;
     let answer: unknown = v;
     if (stage.answerType === 'choice-then-cards') {
@@ -568,7 +575,15 @@ const AdminOneScreenPage = () => {
         </CollapsibleBlock>
 
         {/* БЛОК 3: Поле ведущего */}
-        <CollapsibleBlock title="ПИТ-СТОП" open={showLeaderBlock} onToggle={() => setShowLeaderBlock(v => !v)}>
+        <CollapsibleBlock title="ПИТ-СТОП" open={showLeaderBlock} onToggle={() => setShowLeaderBlock(v => !v)} headerAction={
+          <Button size="sm" variant="success" disabled={roomState.currentStage >= STAGES.length - 1} onClick={() => {
+            const allScored = roomState.players.every(p => p.lastSpeedDelta?.[roomState.currentStage] !== undefined);
+            if (!allScored) { setNotAllScoredWarning(true); setTimeout(() => setNotAllScoredWarning(false), 4000); return; }
+            game.nextStage();
+          }}>
+            ➡ Следующий этап
+          </Button>
+        }>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {roomState.players.map((player) => (
               <div key={player.id} className="rounded-xl border bg-background p-3 space-y-3">
