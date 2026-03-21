@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { BRAND_NAME, GAME_TITLE, STAGES } from '@/config/stages';
+import { isAuthorized } from '@/config/accessCodes';
 import { motion } from 'framer-motion';
 import {
   Trophy, Users, Monitor, Timer, Target,
@@ -86,7 +87,7 @@ const LandingPage = () => {
             <Button
               variant="hero"
               className="w-full sm:w-[280px] justify-center bg-white text-[#2A168F] hover:bg-white/90 font-bold h-11 sm:h-14 px-4 sm:px-10 text-sm sm:text-lg rounded-lg"
-              onClick={() => navigate('/access')}
+              onClick={() => navigate(isAuthorized() ? '/game' : '/access')}
             >
               <span className="text-lg sm:text-2xl mr-1 sm:mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Включить зажигание <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
             </Button>
@@ -286,7 +287,7 @@ const LandingPage = () => {
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Готовы к заезду?</h2>
           <p className="text-muted-foreground mb-8">Запустите игру прямо сейчас — нужен только браузер</p>
-          <Button variant="hero" className="w-full sm:w-[300px] justify-center h-11 sm:h-14 px-4 sm:px-10 text-sm sm:text-lg rounded-lg" onClick={() => navigate('/access')}>
+          <Button variant="hero" className="w-full sm:w-[300px] justify-center h-11 sm:h-14 px-4 sm:px-10 text-sm sm:text-lg rounded-lg" onClick={() => navigate(isAuthorized() ? '/game' : '/access')}>
             <span className="text-lg sm:text-2xl mr-1 sm:mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Включить зажигание <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
           </Button>
         </motion.div>
