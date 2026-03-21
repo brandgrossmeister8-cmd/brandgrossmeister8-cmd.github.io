@@ -189,7 +189,7 @@ export function getHostTelegram(code: string): string {
 export function getCurrentHostTelegram(): string {
   const code = getSavedCode();
   if (!code) return '';
-  if (code === 'MASTER') return '';
+  if (code === 'MASTER') return 'brandgros';
   return getHostTelegram(code);
 }
 
