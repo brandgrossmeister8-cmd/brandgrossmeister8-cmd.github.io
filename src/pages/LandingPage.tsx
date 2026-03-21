@@ -296,7 +296,6 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-semibold" style={{ color: '#A977FA' }}>{BRAND_NAME}</span>
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} <span style={{ color: '#A977FA' }}>{BRAND_NAME}</span>. Все права защищены.</p>
           <button onClick={() => navigate('/admin-codes')} className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors">
             Администрирование
