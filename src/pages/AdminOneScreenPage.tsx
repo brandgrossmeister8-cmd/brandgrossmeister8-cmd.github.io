@@ -14,66 +14,101 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 type ChoiceDraft = { type: string; details?: string; fields?: Record<string, string> };
 type Draft = string | number | ChoiceDraft | null;
 
+// Генерация WAV в base64 — работает во всех браузерах включая Яндекс
+function generateWav(samples: number[], sampleRate = 22050): string {
+  const numSamples = samples.length;
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
+  const writeStr = (offset: number, str: string) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, numSamples * 2, true);
+  for (let i = 0; i < numSamples; i++) {
+    view.setInt16(44 + i * 2, Math.max(-32768, Math.min(32767, samples[i] * 32767)), true);
+  }
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return 'data:audio/wav;base64,' + btoa(binary);
+}
+
+// Предгенерированные звуки — не уничтожаются при перерисовке
+let nextStageAudio: HTMLAudioElement | null = null;
+
+function getNextStageAudio(): HTMLAudioElement {
+  if (!nextStageAudio) {
+    const rate = 22050;
+    const samples: number[] = [];
+    for (let i = 0; i < rate * 0.15; i++) {
+      const t = i / rate;
+      const freq = 300 + (900 * t / 0.15);
+      const vol = 0.3 * (1 - t / 0.15);
+      samples.push(vol * Math.sin(2 * Math.PI * freq * t));
+    }
+    for (let i = 0; i < rate * 0.05; i++) samples.push(0);
+    for (let i = 0; i < rate * 0.2; i++) {
+      const t = i / rate;
+      const vol = 0.25 * (1 - t / 0.2);
+      samples.push(vol * Math.sin(2 * Math.PI * 1200 * t));
+    }
+    nextStageAudio = new Audio(generateWav(samples, rate));
+  }
+  return nextStageAudio;
+}
+
 function playNextStageSound() {
-  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-  // Короткий "переключение передачи" — восходящий свип + щелчок
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(200, ctx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
-  gain.gain.setValueAtTime(0.2, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.2);
-  // Подтверждающий "дзинь"
-  setTimeout(() => {
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.connect(gain2);
-    gain2.connect(ctx.destination);
-    osc2.type = 'sine';
-    osc2.frequency.value = 1200;
-    gain2.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-    osc2.start(ctx.currentTime);
-    osc2.stop(ctx.currentTime + 0.3);
-  }, 200);
+  const audio = getNextStageAudio();
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
+}
+
+let finishAudio: HTMLAudioElement | null = null;
+
+function getFinishAudio(): HTMLAudioElement {
+  if (!finishAudio) {
+    const rate = 22050;
+    const samples: number[] = [];
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, idx) => {
+      const start = Math.floor(idx * 0.15 * rate);
+      const dur = Math.floor(0.4 * rate);
+      for (let i = 0; i < dur; i++) {
+        const t = i / rate;
+        const vol = 0.3 * Math.max(0, 1 - t / 0.4);
+        const pos = start + i;
+        samples[pos] = (samples[pos] || 0) + vol * Math.sin(2 * Math.PI * freq * t);
+      }
+    });
+    const chordStart = Math.floor(0.7 * rate);
+    for (let i = 0; i < rate * 1.0; i++) {
+      const t = i / rate;
+      const vol = 0.2 * Math.max(0, 1 - t / 1.0);
+      const pos = chordStart + i;
+      let sum = 0;
+      notes.forEach(f => { sum += Math.sin(2 * Math.PI * f * t); });
+      samples[pos] = (samples[pos] || 0) + vol * sum / notes.length;
+    }
+    for (let i = 0; i < samples.length; i++) if (!samples[i]) samples[i] = 0;
+    for (let i = 0; i < samples.length; i++) samples[i] = Math.max(-1, Math.min(1, samples[i]));
+    finishAudio = new Audio(generateWav(samples, rate));
+  }
+  return finishAudio;
 }
 
 function playFinishSound() {
-  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-  // Клетчатый флаг — фанфары финиша
-  const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
-  notes.forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.15 + 0.5);
-    osc.start(ctx.currentTime + i * 0.15);
-    osc.stop(ctx.currentTime + i * 0.15 + 0.5);
-  });
-  // Завершающий аккорд
-  setTimeout(() => {
-    [523, 659, 784, 1047].forEach(freq => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'triangle';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.25, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 1.2);
-    });
-  }, 650);
+  const audio = getFinishAudio();
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 }
 
 /** Collapsible section with arrow toggle */
@@ -526,7 +561,8 @@ const AdminOneScreenPage = () => {
             <Button size="sm" variant="success" disabled={roomState.currentStage >= STAGES.length - 1} onClick={() => {
               const allScored = roomState.players.every(p => p.lastSpeedDelta?.[roomState.currentStage] !== undefined);
               if (!allScored) { setNotAllScoredWarning(true); setTimeout(() => setNotAllScoredWarning(false), 4000); return; }
-              playNextStageSound(); game.nextStage();
+              playNextStageSound();
+              setTimeout(() => game.nextStage(), 300);
             }}>
               ➡ Следующий этап
             </Button>
@@ -534,7 +570,7 @@ const AdminOneScreenPage = () => {
               const allScored = roomState.players.every(p => p.lastSpeedDelta?.[roomState.currentStage] !== undefined);
               if (!allScored) { setNotAllScoredWarning(true); setTimeout(() => setNotAllScoredWarning(false), 4000); return; }
               playFinishSound();
-              game.finishGame();
+              setTimeout(() => game.finishGame(), 500);
             }}>🏁 Завершить игру</Button>
           </div>
           {notAllScoredWarning && (
@@ -642,7 +678,8 @@ const AdminOneScreenPage = () => {
           <Button size="sm" variant="success" disabled={roomState.currentStage >= STAGES.length - 1} onClick={() => {
             const allScored = roomState.players.every(p => p.lastSpeedDelta?.[roomState.currentStage] !== undefined);
             if (!allScored) { setNotAllScoredWarning(true); setTimeout(() => setNotAllScoredWarning(false), 4000); return; }
-            game.nextStage();
+            playNextStageSound();
+            setTimeout(() => game.nextStage(), 300);
           }}>
             ➡ Следующий этап
           </Button>
