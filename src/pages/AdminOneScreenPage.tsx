@@ -14,6 +14,39 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 type ChoiceDraft = { type: string; details?: string; fields?: Record<string, string> };
 type Draft = string | number | ChoiceDraft | null;
 
+function playFinishSound() {
+  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  // Клетчатый флаг — фанфары финиша
+  const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.15 + 0.5);
+    osc.start(ctx.currentTime + i * 0.15);
+    osc.stop(ctx.currentTime + i * 0.15 + 0.5);
+  });
+  // Завершающий аккорд
+  setTimeout(() => {
+    [523, 659, 784, 1047].forEach(freq => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 1.2);
+    });
+  }, 650);
+}
+
 /** Collapsible section with arrow toggle */
 function CollapsibleBlock({
   title,
@@ -471,6 +504,7 @@ const AdminOneScreenPage = () => {
             <Button size="sm" variant="destructive" onClick={() => {
               const allScored = roomState.players.every(p => p.lastSpeedDelta?.[roomState.currentStage] !== undefined);
               if (!allScored) { setNotAllScoredWarning(true); setTimeout(() => setNotAllScoredWarning(false), 4000); return; }
+              playFinishSound();
               game.finishGame();
             }}>🏁 Завершить игру</Button>
           </div>
