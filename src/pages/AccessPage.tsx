@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BRAND_NAME, GAME_TITLE } from '@/config/stages';
-import { validateCode, saveCode, isAuthorized, saveCustomNames, getCustomNames } from '@/config/accessCodes';
+import { validateCode, saveCode, isAuthorized, saveCustomNames, getCustomNames, getHostName, loadFromFirestore, onCacheUpdate } from '@/config/accessCodes';
 import { motion } from 'framer-motion';
 
 const MASTER_PASSWORD = '369852147';
@@ -15,8 +15,16 @@ const AccessPage = () => {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [loaded, setLoaded] = useState(false);
+
+  // Дождаться загрузки данных из Firestore перед проверкой кода
+  useEffect(() => {
+    loadFromFirestore().then(() => setLoaded(true));
+    return onCacheUpdate(() => setLoaded(true));
+  }, []);
 
   useEffect(() => {
+    if (!loaded) return;
     if (isAuthorized()) {
       navigate('/game', { replace: true });
       return;
@@ -25,13 +33,16 @@ const AccessPage = () => {
     if (urlCode) {
       const valid = validateCode(urlCode);
       if (valid) {
+        // Имя берём из базы — не спрашиваем
+        const hostName = getHostName(valid);
+        localStorage.setItem(HOST_NAME_KEY, hostName);
         saveCode(valid);
         navigate('/game', { replace: true });
       } else {
         setError('Код из ссылки недействителен');
       }
     }
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, loaded]);
 
   const handleSubmit = () => {
     if (!name.trim()) {

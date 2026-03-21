@@ -407,13 +407,33 @@ const AdminOneScreenPage = () => {
 
   const explainCard = (label: string) => {
     const t = label.toLowerCase();
+    // Свободные карточки
     if (t.includes('custom')) return 'Дополнительная информация, которую вы знаете о своей ЦА';
+    // B2B параметры
+    if (t.includes('зачем для бизнеса')) return 'Зачем ваш продукт нужен бизнесу?';
+    if (t.includes('отрасль')) return 'Важна ли отрасль для описания вашей целевой аудитории?';
+    if (t.includes('размер бизнеса')) return 'Какой размер бизнеса вас интересует? Малый, средний, крупный.';
+    if (t.includes('форма взаимоотношений')) return 'Вас интересуют долгосрочные отношения с клиентом или это только разовая сделка?';
+    if (t.includes('лицо принимающее решение') || t.includes('лпр') && !t.includes('личный')) return 'Кто принимает решение о покупке вашего продукта?';
+    if (t.includes('личный зачем')) return 'Если у вас есть ЛПР, то у него есть свой личный «зачем». Определите, зачем конкретно ЛПРу делать так, чтобы компания закупала ваш продукт.';
+    // B2C параметры
+    if (t === 'зачем') return 'Зачем ваш продукт вашей целевой аудитории, вашим клиентам?';
+    if (t.includes('модель поведения')) return 'Ваши клиенты принимают решение о покупке рационально или эмоционально?';
+    if (t.includes('семья')) return 'Вас больше интересуют семейные люди или одинокие?';
+    if (t.includes('дети')) return 'У вашей целевой аудитории есть дети?';
+    if (t.includes('горожан') || t.includes('сельск')) return 'Здесь мы принимаем решение не по месту проживания, а по образу мышления. Ваши клиенты мыслят как горожане или как сельские жители?';
+    if (t.includes('возраст')) return 'Важен ли возраст? Какой возраст вы можете указать?';
+    if (t.includes('пол')) return 'Важен ли вам пол?';
+    if (t.includes('экономическ')) return 'Это люди low, low-medium, high-medium или premium?';
+    if (t.includes('мотив')) return 'Почему эти люди покупают именно у вас?';
+    // Этап 1 — тип продукта
     if (t.includes('товар')) return getContent('explain.товар');
     if (t.includes('услуга')) return getContent('explain.услуга');
     if (t.includes('информация')) return getContent('explain.информация');
     if (t.includes('технолог')) return getContent('explain.технология');
     if (t.includes('сервис')) return getContent('explain.сервис');
     if (t.includes('сырье')) return getContent('explain.сырье');
+    // Этап 4 — стратегия трафика
     if (t.includes('зовем всех')) return getContent('explain.зовем_всех');
     if (t.includes('приходят сами')) return getContent('explain.приходят_сами');
     if (t.includes('только тех')) return getContent('explain.только_тех');
@@ -501,25 +521,39 @@ const AdminOneScreenPage = () => {
                 <Button size="sm" variant={previewAudienceType === 'B2C' ? 'default' : 'outline'} onClick={() => setPreviewAudienceType('B2C')}>B2C</Button>
               </div>
               {previewAudienceType && stage.subChoices[previewAudienceType] && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {stage.subChoices[previewAudienceType].map((card) => (
-                    <button
-                      key={card.id}
-                      type="button"
-                      onClick={() => setSelectedCardLabel(prev => prev === (card.customTitle ? card.id : card.label) ? '' : (card.customTitle ? card.id : card.label))}
-                      className={`rounded-lg border p-2 text-xs text-left transition-all ${
-                        card.customTitle
-                          ? selectedCardLabel === card.id
-                            ? 'bg-[#2A168F] border-[#2A168F] text-white scale-[1.02] shadow-lg'
-                            : 'bg-white border-dashed border-[#D8B4FE] text-muted-foreground italic hover:bg-[#E9D8FD]'
-                          : selectedCardLabel === card.label
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {stage.subChoices[previewAudienceType].filter((card) => !card.customTitle).map((card) => (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => setSelectedCardLabel(prev => prev === card.label ? '' : card.label)}
+                        className={`rounded-lg border p-2 text-xs text-left transition-all ${
+                          selectedCardLabel === card.label
                             ? 'bg-[#2A168F] border-[#2A168F] text-white scale-[1.02] shadow-lg'
                             : 'bg-[#F3E8FF] border-[#D8B4FE] text-muted-foreground hover:bg-[#E9D8FD]'
-                      }`}
-                    >
-                      {card.customTitle ? '✏️ Свой параметр' : card.label}
-                    </button>
-                  ))}
+                        }`}
+                      >
+                        {card.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    {stage.subChoices[previewAudienceType].filter((card) => card.customTitle).map((card) => (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => setSelectedCardLabel(prev => prev === card.id ? '' : card.id)}
+                        className={`flex-1 rounded-lg border p-2 text-xs text-left transition-all ${
+                          selectedCardLabel === card.id
+                            ? 'bg-[#2A168F] border-[#2A168F] text-white scale-[1.02] shadow-lg'
+                            : 'bg-white border-dashed border-[#D8B4FE] text-muted-foreground italic hover:bg-[#E9D8FD]'
+                        }`}
+                      >
+                        ✏️ Свой параметр
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

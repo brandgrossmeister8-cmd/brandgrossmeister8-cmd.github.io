@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllCodes, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode, addHost, removeHost, getTelegramLinks, saveTelegramLinks } from '@/config/accessCodes';
+import { getAllCodes, getCustomNames, saveCustomNames, getDisabledCodes, disableCode, enableCode, addHost, removeHost, getTelegramLinks, saveTelegramLinks, onCacheUpdate } from '@/config/accessCodes';
 import { BRAND_NAME } from '@/config/stages';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -23,6 +23,18 @@ const AdminCodesPage = () => {
   const [tgLinks, setTgLinks] = useState<Record<string, string>>(getTelegramLinks);
   const [editingTg, setEditingTg] = useState<string | null>(null);
   const [tgValue, setTgValue] = useState('');
+
+  // Подписка на обновления из Firestore
+  const refreshFromCache = useCallback(() => {
+    setAllCodes(getAllCodes());
+    setCustomNames(getCustomNames());
+    setDisabledCodes(getDisabledCodes());
+    setTgLinks(getTelegramLinks());
+  }, []);
+
+  useEffect(() => {
+    return onCacheUpdate(refreshFromCache);
+  }, [refreshFromCache]);
 
   const handleLogin = () => {
     if (password === MASTER_PASSWORD) {

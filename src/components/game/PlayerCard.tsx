@@ -47,17 +47,26 @@ function formatAnswer(answer: unknown, stageConfig?: StageConfig): string {
       };
 
       if (data && choices) {
+        // Get custom titles from customTitles object or from *-title fields
+        const customTitles = (obj.customTitles as Record<string, string>) || {};
+
         const lines = Object.entries(data)
-          .filter(([_, v]) => v && String(v).trim())
+          .filter(([key, v]) => v && String(v).trim() && !key.endsWith('-title'))
           .map(([key, value]) => {
             const newKey = oldToNewMap[key] || key;
             const choice = choices.find((c: any) => c.id === newKey || c.id === key);
-            const label = choice?.label || key;
+            // For custom cards, use custom title from customTitles or from -title field
+            let label = choice?.label || key;
+            if (choice?.customTitle) {
+              const titleFromTitles = customTitles[key];
+              const titleFromFields = data[`${key}-title`];
+              label = titleFromTitles || titleFromFields || 'Свой параметр';
+            }
             return `${label}: ${value}`;
           });
 
         const filledCount = lines.length;
-        return `${obj.type} (${filledCount})\n${lines.join('\n')}`;
+        return `Рынок: ${obj.type} (${filledCount})\n${lines.join('\n')}`;
       }
     }
 
