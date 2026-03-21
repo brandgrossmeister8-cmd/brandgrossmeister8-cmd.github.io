@@ -14,6 +14,35 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 type ChoiceDraft = { type: string; details?: string; fields?: Record<string, string> };
 type Draft = string | number | ChoiceDraft | null;
 
+function playNextStageSound() {
+  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  // Короткий "переключение передачи" — восходящий свип + щелчок
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(200, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.2);
+  // Подтверждающий "дзинь"
+  setTimeout(() => {
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.type = 'sine';
+    osc2.frequency.value = 1200;
+    gain2.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    osc2.start(ctx.currentTime);
+    osc2.stop(ctx.currentTime + 0.3);
+  }, 200);
+}
+
 function playFinishSound() {
   const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
   // Клетчатый флаг — фанфары финиша
@@ -497,7 +526,7 @@ const AdminOneScreenPage = () => {
             <Button size="sm" variant="success" disabled={roomState.currentStage >= STAGES.length - 1} onClick={() => {
               const allScored = roomState.players.every(p => p.lastSpeedDelta?.[roomState.currentStage] !== undefined);
               if (!allScored) { setNotAllScoredWarning(true); setTimeout(() => setNotAllScoredWarning(false), 4000); return; }
-              game.nextStage();
+              playNextStageSound(); game.nextStage();
             }}>
               ➡ Следующий этап
             </Button>
