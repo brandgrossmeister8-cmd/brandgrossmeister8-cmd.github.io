@@ -17,6 +17,7 @@ import AdminCodesPage from "./pages/AdminCodesPage";
 import InstructionsPage from "./pages/InstructionsPage";
 import RoadmapPage from "./pages/RoadmapPage";
 import JournalPrintPage from "./pages/JournalPrintPage";
+import ContentEditorPage from "./pages/ContentEditorPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/instructions" element={<InstructionsPage />} />
             <Route path="/roadmap" element={<RoadmapPage />} />
             <Route path="/journal" element={<JournalPrintPage />} />
+            <Route path="/content-editor" element={<ContentEditorPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>

@@ -1,12 +1,13 @@
 import { StageConfig, SpeedInterpretation } from '@/types/game';
+import { getContent } from '@/config/contentStore';
 
 export const STAGES: StageConfig[] = [
   {
     index: 0,
     title: 'Этап 1',
-    cityName: 'Ассортиминск',
+    get cityName() { return getContent('stage.0.cityName'); },
     timerSeconds: 60,
-    question: 'Выберите основной тип вашего продукта:',
+    get question() { return getContent('stage.0.question'); },
     answerType: 'single-choice',
     options: [
       { id: 'Товар', label: 'Товар' },
@@ -20,40 +21,40 @@ export const STAGES: StageConfig[] = [
   {
     index: 1,
     title: 'Этап 2',
-    cityName: 'Продукто-Брендск',
+    get cityName() { return getContent('stage.1.cityName'); },
     timerSeconds: 30,
-    question: 'Распределите 100% между Брендом и Ассортиментом:',
+    get question() { return getContent('stage.1.question'); },
     answerType: 'slider',
     sliderLabels: ['Бренд', 'Ассортимент'],
   },
   {
     index: 2,
     title: 'Этап 3',
-    cityName: 'Зачемград',
+    get cityName() { return getContent('stage.2.cityName'); },
     timerSeconds: 180,
-    question: 'Расскажите, зачем людям ваш продукт?',
+    get question() { return getContent('stage.2.question'); },
     answerType: 'textarea',
-    placeholder: 'Опишите подробно, зачем клиенты покупают ваш продукт...',
+    get placeholder() { return getContent('stage.2.placeholder'); },
   },
   {
     index: 3,
     title: 'Этап 4',
-    cityName: 'Траффик-Сити',
+    get cityName() { return getContent('stage.3.cityName'); },
     timerSeconds: 30,
-    question: 'Как вы привлекаете клиентов?',
+    get question() { return getContent('stage.3.question'); },
     answerType: 'single-choice',
     options: [
       { id: 'Зовем всех', label: 'Зовем всех' },
       { id: 'Клиенты приходят сами', label: 'Клиенты приходят сами' },
-      { id: 'Зовем только тех, кто нужен', label: 'Зовем только тех, кто нужен' },
+      { id: 'Зовем только тех, кто нужен', label: 'Зовем только тех, кого нужен' },
     ],
   },
   {
     index: 4,
     title: 'Этап 5',
-    cityName: 'Цалово',
+    get cityName() { return getContent('stage.4.cityName'); },
     timerSeconds: 180,
-    question: 'Выберите тип клиента и заполните параметры целевой аудитории:',
+    get question() { return getContent('stage.4.question'); },
     answerType: 'choice-then-cards',
     subChoices: {
       B2B: [
@@ -63,6 +64,8 @@ export const STAGES: StageConfig[] = [
         { id: 'relationship', label: 'Форма взаимоотношений (долгосрочно или разово)', editable: true },
         { id: 'decision-maker', label: 'Лицо принимающее решение (ЛПР)', editable: true },
         { id: 'personal-why', label: 'Личный зачем ЛПР', editable: true },
+        { id: 'b2b-custom-1', label: 'Свой параметр 1', editable: true, customTitle: true },
+        { id: 'b2b-custom-2', label: 'Свой параметр 2', editable: true, customTitle: true },
       ],
       B2C: [
         { id: 'why', label: 'Зачем', editable: true },
@@ -74,40 +77,42 @@ export const STAGES: StageConfig[] = [
         { id: 'gender', label: 'Пол', editable: true },
         { id: 'economy', label: 'Экономическое положение', editable: true },
         { id: 'motive', label: 'Мотив', editable: true },
+        { id: 'b2c-custom-1', label: 'Свой параметр 1', editable: true, customTitle: true },
+        { id: 'b2c-custom-2', label: 'Свой параметр 2', editable: true, customTitle: true },
       ],
     },
     subChoiceHints: {
-      B2B: 'Заполните 6 параметров',
-      B2C: 'Заполните 9 параметров',
+      B2B: 'Заполните 8 параметров',
+      B2C: 'Заполните 11 параметров',
     },
   },
   {
     index: 5,
     title: 'Этап 6',
-    cityName: 'Выборг',
+    get cityName() { return getContent('stage.5.cityName'); },
     timerSeconds: 30,
-    question: 'Распределите 100% между Системностью и Креативностью:',
+    get question() { return getContent('stage.5.question'); },
     answerType: 'slider',
     sliderLabels: ['Системность', 'Креативность'],
   },
 ];
 
 export const SPEED_INTERPRETATIONS: SpeedInterpretation[] = [
-  { speed: 0, text: 'Работа вхолостую, ресурсы тратятся зря' },
-  { speed: 30, text: 'Движение есть, но бизнес на грани остановки' },
-  { speed: 60, text: 'Базовый уровень, стагнация' },
-  { speed: 90, text: 'Хороший прогресс, но эффективность ресурсов лишь 50%' },
-  { speed: 120, text: 'Идеально выстроенная система маркетинга' },
+  { speed: 0, get text() { return getContent('speed.0'); } },
+  { speed: 30, get text() { return getContent('speed.30'); } },
+  { speed: 60, get text() { return getContent('speed.60'); } },
+  { speed: 90, get text() { return getContent('speed.90'); } },
+  { speed: 120, get text() { return getContent('speed.120'); } },
 ];
 
 export function getInterpretation(speed: number): string {
-  if (speed <= 0) return SPEED_INTERPRETATIONS[0].text;
-  if (speed >= 120) return SPEED_INTERPRETATIONS[4].text;
-  
+  if (speed <= 0) return getContent('speed.0');
+  if (speed >= 120) return getContent('speed.120');
+
   const sorted = [...SPEED_INTERPRETATIONS].sort((a, b) => a.speed - b.speed);
   let closest = sorted[0];
   let minDiff = Math.abs(speed - closest.speed);
-  
+
   for (const interp of sorted) {
     const diff = Math.abs(speed - interp.speed);
     if (diff < minDiff) {
@@ -115,13 +120,13 @@ export function getInterpretation(speed: number): string {
       closest = interp;
     }
   }
-  
+
   return closest.text;
 }
 
 export const INITIAL_SPEED = 60;
 export const SPEED_DELTA = 10;
 export const MAX_PLAYERS = 6;
-export const BRAND_NAME = 'ИМШИНЕЦКАЯ И ПАРТНЕРЫ';
-export const GAME_TITLE = 'Маркетинговый заезд';
+export const BRAND_NAME = getContent('global.brandName');
+export const GAME_TITLE = getContent('global.gameTitle');
 export const ONE_SCREEN_MODE = true;

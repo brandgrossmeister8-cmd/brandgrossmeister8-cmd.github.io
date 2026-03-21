@@ -16,6 +16,7 @@ export function StageAnswer({ stage, onSubmit, disabled, submitted }: StageAnswe
   const [textValue, setTextValue] = useState('');
   const [subChoice, setSubChoice] = useState<string | null>(null);
   const [cardValues, setCardValues] = useState<Record<string, string>>({});
+  const [customTitles, setCustomTitles] = useState<Record<string, string>>({});
 
   // Load draft from localStorage for textarea
   useEffect(() => {
@@ -47,7 +48,7 @@ export function StageAnswer({ stage, onSubmit, disabled, submitted }: StageAnswe
         }
         break;
       case 'choice-then-cards':
-        if (subChoice) onSubmit({ type: subChoice, params: cardValues });
+        if (subChoice) onSubmit({ type: subChoice, params: cardValues, customTitles });
         break;
     }
   };
@@ -146,7 +147,18 @@ export function StageAnswer({ stage, onSubmit, disabled, submitted }: StageAnswe
               )}
               {stage.subChoices[subChoice].map((card: StageCardOption) => (
                 <div key={card.id} className="flex items-center gap-2">
-                  <span className="text-sm font-medium w-40 shrink-0">{card.label || card.placeholder || ''}</span>
+                  {card.customTitle ? (
+                    <input
+                      type="text"
+                      value={customTitles[card.id] || ''}
+                      onChange={e => setCustomTitles(prev => ({ ...prev, [card.id]: e.target.value }))}
+                      placeholder="Название параметра"
+                      disabled={disabled}
+                      className="text-sm font-medium w-40 shrink-0 p-1 rounded border border-dashed border-primary/40 bg-primary/5 focus:ring-2 focus:ring-primary outline-none placeholder:text-muted-foreground/50"
+                    />
+                  ) : (
+                    <span className="text-sm font-medium w-40 shrink-0">{card.label || card.placeholder || ''}</span>
+                  )}
                   {card.editable && (
                     <input
                       type="text"

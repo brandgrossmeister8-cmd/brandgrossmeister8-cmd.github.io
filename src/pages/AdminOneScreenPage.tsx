@@ -8,6 +8,7 @@ import { TimerDisplay } from '@/components/game/TimerDisplay';
 import { PlayerCard } from '@/components/game/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { STAGES, getInterpretation } from '@/config/stages';
+import { getContent } from '@/config/contentStore';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 type ChoiceDraft = { type: string; details?: string; fields?: Record<string, string> };
@@ -78,38 +79,13 @@ const AdminOneScreenPage = () => {
   const [emailCopied, setEmailCopied] = useState<string | null>(null);
   const [notAllScoredWarning, setNotAllScoredWarning] = useState(false);
 
-  const stageRecommendations: Record<number, { city: string; strong: string; weak: string }> = {
-    0: {
-      city: 'АССОРТИМИНСК',
-      strong: 'Вы хорошо понимаете, что вы продаёте, а значит ваша программа продвижения выстроена системно, в соответствии с продвигаемым продуктом.',
-      weak: 'Вы не до конца понимаете, что вы продаёте. Соответственно, ваша система продвижения не может быть выстроена эффективно.',
-    },
-    1: {
-      city: 'ПРОДУКТО-БРЕНДСК',
-      strong: 'Вы правильно выбрали приоритеты — не фокусируетесь на отдельных позициях, а продвигаете бренд.',
-      weak: 'Вы фокусируетесь на отдельных продуктах, тем самым нерационально используете бюджет. При добавлении каждой новой позиции вам придётся всё начинать заново.',
-    },
-    2: {
-      city: 'ЗАЧЕМГРАД',
-      strong: 'Вы чётко понимаете, зачем ваши клиенты покупают ваш продукт, и можете вести с ними эффективную коммуникацию.',
-      weak: 'Вам необходимо чётко определить, зачем ваши клиенты у вас покупают, чтобы выстроить эффективную коммуникацию.',
-    },
-    3: {
-      city: 'ТРАФФИК-СИТИ',
-      strong: 'Вы эффективно вкладываете бюджеты в продвижение и привлекаете нужную аудиторию.',
-      weak: 'Вы неэффективно вкладываете бюджеты в привлечение аудитории — привлекаете не тех, кого нужно, либо зовёте всех. Ваши бюджеты расходуются неэффективно.',
-    },
-    4: {
-      city: 'ЦАЛОВО',
-      strong: 'Вы хорошо изучили свою целевую аудиторию. Это ваш сильный плюс — вы эффективно взаимодействуете с аудиторией.',
-      weak: 'Вы плохо знаете свою целевую аудиторию. Все ваши коммуникации нацелены не на эффективное взаимодействие, а в большей степени способствуют трате бюджета.',
-    },
-    5: {
-      city: 'ВЫБОРГ',
-      strong: 'Вы чётко понимаете, что система — это основа, а креатив — дополнение. Двигайтесь в этом направлении!',
-      weak: 'Креатив — это хорошо, но это всего лишь эффект в точке, здесь и сейчас. Эффект на длинной дистанции даёт только система.',
-    },
-  };
+  const stageRecommendations: Record<number, { city: string; strong: string; weak: string }> = Object.fromEntries(
+    [0, 1, 2, 3, 4, 5].map(i => [i, {
+      city: getContent(`stage.${i}.cityName`).toUpperCase(),
+      strong: getContent(`adminRec.${i}.strong`),
+      weak: getContent(`adminRec.${i}.weak`),
+    }])
+  );
 
   const getPlayerResults = (deltas: Record<number, 10 | -10> | undefined) => {
     if (!deltas) return { strong: [] as { city: string; text: string }[], weak: [] as { city: string; text: string }[] };
@@ -431,15 +407,16 @@ const AdminOneScreenPage = () => {
 
   const explainCard = (label: string) => {
     const t = label.toLowerCase();
-    if (t.includes('товар')) return 'Товар — физическая вещь, которую можно взять, потрогать, унести.';
-    if (t.includes('услуга')) return 'Услуга — работа с ответственностью за результат.';
-    if (t.includes('информация')) return 'Информация — передача данных или знаний без ответственности за результат.';
-    if (t.includes('технолог')) return 'Технология — упакованные знания и опыт, которые работают без участия автора.';
-    if (t.includes('сервис')) return 'Сервис — повторяющийся процесс, который делается одинаково для каждого клиента.';
-    if (t.includes('сырье')) return 'Сырье — продают все и везде, ноунейм. Покупатель выбирает только по цене.';
-    if (t.includes('зовем всех')) return 'Массовая стратегия охвата: широкий поток, но ниже точность попадания в целевую аудиторию. Большие бюджеты на рекламу, высокая стоимость привлечения одного клиента.';
-    if (t.includes('приходят сами')) return 'Пассивная стратегия: зависимость от сарафанного радио и случайного входящего потока. Низкие затраты, но непредсказуемый результат и сложность масштабирования.';
-    if (t.includes('только тех')) return 'Целевая стратегия: фокус на клиентах, которым продукт нужен прямо сейчас. Точный таргетинг, высокая конверсия, оптимальное использование бюджета.';
+    if (t.includes('custom')) return 'Дополнительная информация, которую вы знаете о своей ЦА';
+    if (t.includes('товар')) return getContent('explain.товар');
+    if (t.includes('услуга')) return getContent('explain.услуга');
+    if (t.includes('информация')) return getContent('explain.информация');
+    if (t.includes('технолог')) return getContent('explain.технология');
+    if (t.includes('сервис')) return getContent('explain.сервис');
+    if (t.includes('сырье')) return getContent('explain.сырье');
+    if (t.includes('зовем всех')) return getContent('explain.зовем_всех');
+    if (t.includes('приходят сами')) return getContent('explain.приходят_сами');
+    if (t.includes('только тех')) return getContent('explain.только_тех');
     return 'Этот вариант отражает один из рабочих подходов в текущем этапе маркетинговой стратегии.';
   };
 
@@ -529,14 +506,18 @@ const AdminOneScreenPage = () => {
                     <button
                       key={card.id}
                       type="button"
-                      onClick={() => setSelectedCardLabel(prev => prev === card.label ? '' : card.label)}
+                      onClick={() => setSelectedCardLabel(prev => prev === (card.customTitle ? card.id : card.label) ? '' : (card.customTitle ? card.id : card.label))}
                       className={`rounded-lg border p-2 text-xs text-left transition-all ${
-                        selectedCardLabel === card.label
-                          ? 'bg-[#2A168F] border-[#2A168F] text-white scale-[1.02] shadow-lg'
-                          : 'bg-[#F3E8FF] border-[#D8B4FE] text-muted-foreground hover:bg-[#E9D8FD]'
+                        card.customTitle
+                          ? selectedCardLabel === card.id
+                            ? 'bg-[#2A168F] border-[#2A168F] text-white scale-[1.02] shadow-lg'
+                            : 'bg-white border-dashed border-[#D8B4FE] text-muted-foreground italic hover:bg-[#E9D8FD]'
+                          : selectedCardLabel === card.label
+                            ? 'bg-[#2A168F] border-[#2A168F] text-white scale-[1.02] shadow-lg'
+                            : 'bg-[#F3E8FF] border-[#D8B4FE] text-muted-foreground hover:bg-[#E9D8FD]'
                       }`}
                     >
-                      {card.label}
+                      {card.customTitle ? '✏️ Свой параметр' : card.label}
                     </button>
                   ))}
                 </div>
@@ -546,7 +527,7 @@ const AdminOneScreenPage = () => {
 
           {selectedCardLabel && stage.answerType !== 'slider' && (
             <div className="rounded-lg border border-[#2A168F]/30 bg-[#FAF5FF] px-4 py-3 text-sm animate-in fade-in duration-200">
-              <span className="font-semibold text-[#2A168F]">{selectedCardLabel}:</span>
+              <span className="font-semibold text-[#2A168F]">{selectedCardLabel.includes('custom') ? '✏️ Свой параметр' : selectedCardLabel}:</span>
               <p className="mt-1 text-muted-foreground">{explainCard(selectedCardLabel)}</p>
             </div>
           )}
@@ -622,19 +603,35 @@ const AdminOneScreenPage = () => {
                         stage.subChoices?.[(draftAnswers[player.id] as ChoiceDraft).type] && (
                           <div className="space-y-2">
                             {stage.subChoices[(draftAnswers[player.id] as ChoiceDraft).type].map((card) => (
-                              <div key={card.id} className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-muted-foreground shrink-0 w-1/3">{card.label}</span>
-                                <input
-                                  className="flex-1 p-2 rounded border bg-background text-sm"
-                                  placeholder="Ответ..."
-                                  value={(draftAnswers[player.id] as ChoiceDraft).fields?.[card.id] || ''}
-                                  onChange={(e) =>
-                                    setDraftAnswers((p) => {
-                                      const prev = (p[player.id] as ChoiceDraft) || { type: '', fields: {} };
-                                      return { ...p, [player.id]: { type: prev.type, fields: { ...(prev.fields || {}), [card.id]: e.target.value } } };
-                                    })
-                                  }
-                                />
+                              <div key={card.id} className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  {card.customTitle ? (
+                                    <input
+                                      className="text-xs font-medium text-muted-foreground shrink-0 w-1/3 p-1 rounded border border-dashed border-primary/40 bg-primary/5 placeholder:text-muted-foreground/50"
+                                      placeholder="Название..."
+                                      value={(draftAnswers[player.id] as ChoiceDraft).fields?.[`${card.id}-title`] || ''}
+                                      onChange={(e) =>
+                                        setDraftAnswers((p) => {
+                                          const prev = (p[player.id] as ChoiceDraft) || { type: '', fields: {} };
+                                          return { ...p, [player.id]: { type: prev.type, fields: { ...(prev.fields || {}), [`${card.id}-title`]: e.target.value } } };
+                                        })
+                                      }
+                                    />
+                                  ) : (
+                                    <span className="text-xs font-medium text-muted-foreground shrink-0 w-1/3">{card.label}</span>
+                                  )}
+                                  <input
+                                    className="flex-1 p-2 rounded border bg-background text-sm"
+                                    placeholder="Ответ..."
+                                    value={(draftAnswers[player.id] as ChoiceDraft).fields?.[card.id] || ''}
+                                    onChange={(e) =>
+                                      setDraftAnswers((p) => {
+                                        const prev = (p[player.id] as ChoiceDraft) || { type: '', fields: {} };
+                                        return { ...p, [player.id]: { type: prev.type, fields: { ...(prev.fields || {}), [card.id]: e.target.value } } };
+                                      })
+                                    }
+                                  />
+                                </div>
                               </div>
                             ))}
                           </div>

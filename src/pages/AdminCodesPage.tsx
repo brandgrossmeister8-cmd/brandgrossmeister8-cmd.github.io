@@ -275,7 +275,10 @@ const AdminCodesPage = () => {
           </div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-3">
+          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => navigate('/content-editor')}>
+            Редактор контента
+          </Button>
           <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => navigate('/')}>
             На главную
           </Button>

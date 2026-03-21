@@ -53,6 +53,7 @@ export interface StageCardOption {
   label: string;
   editable?: boolean;
   placeholder?: string;
+  customTitle?: boolean;
 }
 
 export interface StageConfig {

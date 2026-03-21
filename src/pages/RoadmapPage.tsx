@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BRAND_NAME, GAME_TITLE, STAGES, getInterpretation } from '@/config/stages';
+import { getContent, getNumContent } from '@/config/contentStore';
 import { Button } from '@/components/ui/button';
 import { BrandHeader } from '@/components/game/BrandHeader';
 import { motion } from 'framer-motion';
@@ -14,56 +15,30 @@ interface StageResult {
   lossPercent: number;
 }
 
-const STAGE_LOSS_MAP: Record<number, number> = { 0: 10, 1: 20, 2: 30, 3: 10, 4: 10, 5: 20 };
+const getStageLossMap = (): Record<number, number> => ({
+  0: getNumContent('calc.loss.0'),
+  1: getNumContent('calc.loss.1'),
+  2: getNumContent('calc.loss.2'),
+  3: getNumContent('calc.loss.3'),
+  4: getNumContent('calc.loss.4'),
+  5: getNumContent('calc.loss.5'),
+});
 
-const STAGE_DATA: Record<number, { city: string; nowWeak: string; nowStrong: string; after: string; step: string }> = {
-  0: {
-    city: 'АССОРТИМИНСК',
-    nowWeak: 'Вы не до конца понимаете, что продаёте. Без этого понимания невозможно выстроить эффективное продвижение.',
-    nowStrong: 'Вы понимаете свой продукт. Это одна из точек, но сама по себе она не создаёт систему — система складывается из всех элементов вместе.',
-    after: 'Когда понимание продукта встроено в систему продвижения, каждый элемент коммуникации работает на конкретный тип продукта. Клиенты сразу понимают, что вы предлагаете.',
-    step: 'Определите тип вашего продукта и выстройте коммуникацию под его специфику.',
-  },
-  1: {
-    city: 'ПРОДУКТО-БРЕНДСК',
-    nowWeak: 'Вы продвигаете отдельные позиции. Каждый новый продукт требует нового бюджета с нуля.',
-    nowStrong: 'Вы понимаете ценность бренда. Это важная точка, но без системы бренд работает не на полную мощность.',
-    after: 'В системе бренд работает как зонтик: любой новый продукт стартует не с нуля, а с уровня доверия. Существенная экономия бюджета на запуск новых направлений.',
-    step: 'Переведите фокус с продвижения отдельных товаров на продвижение бренда.',
-  },
-  2: {
-    city: 'ЗАЧЕМГРАД',
-    nowWeak: 'Вы не можете чётко объяснить, зачем клиенту ваш продукт. Коммуникация размыта.',
-    nowStrong: 'Вы понимаете, зачем клиент покупает. Но это понимание становится по-настоящему эффективным только внутри системы.',
-    after: 'В системе каждое сообщение, пост, разговор с клиентом строится вокруг его реальной потребности. Конверсия из обращения в покупку вырастает кратно.',
-    step: 'Сформулируйте 3 главных «зачем» ваших клиентов и используйте их во всех коммуникациях.',
-  },
-  3: {
-    city: 'ТРАФФИК-СИТИ',
-    nowWeak: 'Бюджеты расходуются неэффективно — привлекаете не тех или всех подряд.',
-    nowStrong: 'Вы привлекаете нужную аудиторию. Но без системы даже правильный трафик не конвертируется в полную силу.',
-    after: 'В системе стоимость привлечения клиента значительно снижается. Каждый рубль бюджета приводит целевого клиента, а не случайного посетителя.',
-    step: 'Откажитесь от массовой рекламы. Настройте привлечение только тех, кому продукт нужен сейчас.',
-  },
-  4: {
-    city: 'ЦАЛОВО',
-    nowWeak: 'Вы плохо знаете свою ЦА. Коммуникации нацелены в пустоту.',
-    nowStrong: 'Вы знаете свою ЦА. Это сильная точка, но знание ЦА раскрывается полностью только когда все элементы системы работают вместе.',
-    after: 'В системе вы говорите на языке клиента, решаете его конкретную проблему. Клиент чувствует: «Это для меня». Лояльность и повторные покупки растут.',
-    step: 'Составьте детальный портрет ЦА: кто, зачем, как принимает решение, что для него важно.',
-  },
-  5: {
-    city: 'ВЫБОРГ',
-    nowWeak: 'Вы делаете ставку на креатив — разовые вспышки без долгосрочного эффекта.',
-    nowStrong: 'Вы понимаете роль системности. Но одно понимание — это ещё не работающая система. Система заставляет весь механизм работать эффективно.',
-    after: 'В работающей системе бизнес предсказуем. Клиенты приходят системно, а не от случая к случаю. Вы можете планировать рост, потому что понимаете, откуда придут клиенты завтра.',
-    step: 'Выстройте систему регулярных точек контакта с клиентом. Креатив — дополнение, не основа.',
-  },
-};
+const getStageData = () => Object.fromEntries(
+  [0, 1, 2, 3, 4, 5].map(i => [i, {
+    city: getContent(`stage.${i}.cityName`).toUpperCase(),
+    nowWeak: getContent(`roadmap.${i}.nowWeak`),
+    nowStrong: getContent(`roadmap.${i}.nowStrong`),
+    after: getContent(`roadmap.${i}.after`),
+    step: getContent(`roadmap.${i}.step`),
+  }])
+) as Record<number, { city: string; nowWeak: string; nowStrong: string; after: string; step: string }>;
 
 const RoadmapPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const STAGE_DATA = getStageData();
+  const STAGE_LOSS_MAP = getStageLossMap();
   const { playerName, playerBusiness, speed, deltas, answers, hostTg, hostName } = (location.state || {}) as {
     playerName?: string;
     playerBusiness?: string;
@@ -165,12 +140,12 @@ const RoadmapPage = () => {
             const r = calcResults();
             const yearTotal = Array.from({ length: 12 }, (_, m) => {
               const mo = m + 1;
-              return (mo >= 3 ? r.budgetSaving : 0) + (mo >= 8 ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
+              return (mo >= budgetSavingMonth ? r.budgetSaving : 0) + (mo >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
             }).reduce((a, b) => a + b, 0);
             const scenarios = [
-              { label: 'Пессимистичный (40%)', val: Math.round(yearTotal * 0.4), color: '#854d0e' },
-              { label: 'Средневзвешенный (70%)', val: Math.round(yearTotal * 0.7), color: '#2A168F' },
-              { label: 'Оптимистичный (100%)', val: Math.round(yearTotal), color: '#166534' },
+              { label: `Пессимистичный (${getNumContent('calc.scenarioPessimistic')}%)`, val: Math.round(yearTotal * getNumContent('calc.scenarioPessimistic') / 100), color: '#854d0e' },
+              { label: `Средневзвешенный (${getNumContent('calc.scenarioBalanced')}%)`, val: Math.round(yearTotal * getNumContent('calc.scenarioBalanced') / 100), color: '#2A168F' },
+              { label: `Оптимистичный (${getNumContent('calc.scenarioOptimistic')}%)`, val: Math.round(yearTotal * getNumContent('calc.scenarioOptimistic') / 100), color: '#166534' },
             ];
             const yearlyEarnings = (check * clients * 12) - (budget * 12);
             return '<div style="border:1.5px solid #3b82f6;border-radius:8px;padding:8px 10px;margin-top:8px;background:#eff6ff">' +
@@ -248,14 +223,25 @@ const RoadmapPage = () => {
   // Каждая зона роста снижает эффективность ОТ ОСТАВШЕГОСЯ
   //
   const CALC_ORDER = [5, 2, 1, 4, 0, 3]; // Выборг, Зачемград, Продукто-Брендск, Цалово, Ассортиминск, Траффик-Сити
-  const STAGE_NAMES: Record<number, string> = { 0: 'Ассортиминск', 1: 'Продукто-Брендск', 2: 'Зачемград', 3: 'Траффик-Сити', 4: 'Цалово', 5: 'Выборг' };
-  const CONVERSION: Record<string, number> = { bad: 0.15, avg: 0.30, good: 0.50, super: 0.70 };
+  const STAGE_NAMES: Record<number, string> = Object.fromEntries(
+    [0, 1, 2, 3, 4, 5].map(i => [i, getContent(`stage.${i}.cityName`)])
+  );
+  const CONVERSION: Record<string, number> = {
+    bad: getNumContent('calc.conversionBad') / 100,
+    avg: getNumContent('calc.conversionAvg') / 100,
+    good: getNumContent('calc.conversionGood') / 100,
+    super: getNumContent('calc.conversionSuper') / 100,
+  };
+  const budgetSavingMonth = getNumContent('calc.budgetSavingMonth');
+  const budgetSavingPercent = getNumContent('calc.budgetSavingPercent') / 100;
+  const trafficGrowthMonth = getNumContent('calc.trafficGrowthMonth');
+  const trafficGrowthPercentVal = getNumContent('calc.trafficGrowthPercent') / 100;
 
   const calcResults = () => {
     const check = parseFloat(avgCheck) || 0;
     const clients = parseFloat(clientsPerMonth) || 0;
     const budget = parseFloat(adBudget) || 0;
-    const potentialRevenue = check * clients; // выручка при 100% эффективности
+    const potentialRevenue = check * clients;
 
     // Мультипликативный расчёт
     let efficiency = 1.0;
@@ -279,19 +265,20 @@ const RoadmapPage = () => {
     const lostRevenue = potentialRevenue - currentRevenue;
     const totalLossPercent = Math.round((1 - efficiency) * 100);
 
-    // Рост трафика +40% с 8-го мес
-    const trafficGrowth = 0.40;
+    // Рост трафика
+    const trafficGrowth = trafficGrowthPercentVal;
     const conversion = CONVERSION[sellerLevel];
     const newClientsFromTraffic = Math.round(clients * trafficGrowth * conversion);
     const revenueFromNewTraffic = newClientsFromTraffic * check;
 
-    // Экономия бюджета 30% с 3-го мес
-    const budgetSaving = budget > 0 ? budget * 0.30 : 0;
+    // Экономия бюджета
+    const budgetSaving = budget > 0 ? budget * budgetSavingPercent : 0;
 
-    // С 8-го месяца — возврат потерь + новый трафик, с 3-го — экономия бюджета
+    // Помесячный расчёт
     const monthlyGainFull = lostRevenue + revenueFromNewTraffic + budgetSaving;
-    const yearlyGain = (lostRevenue * 5) + (budgetSaving * 10) + (revenueFromNewTraffic * 5);
-    // 5 мес возврата потерь (с 8-го), 10 мес экономии (с 3-го), 5 мес нового трафика (с 8-го)
+    const trafficMonths = 12 - trafficGrowthMonth + 1;
+    const savingMonths = 12 - budgetSavingMonth + 1;
+    const yearlyGain = (lostRevenue * trafficMonths) + (budgetSaving * savingMonths) + (revenueFromNewTraffic * trafficMonths);
 
     // Заработок сегодня за год: средний чек × клиенты × 12 − реклама × 12
     const currentYearlyEarnings = (check * clients * 12) - (budget * 12);
@@ -486,8 +473,8 @@ const RoadmapPage = () => {
                           <tbody>
                             {Array.from({ length: 12 }, (_, m) => {
                               const month = m + 1;
-                              const saving = month >= 3 ? r.budgetSaving : 0;
-                              const traffic = month >= 8 ? (r.lostRevenue + r.revenueFromNewTraffic) : 0;
+                              const saving = month >= budgetSavingMonth ? r.budgetSaving : 0;
+                              const traffic = month >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0;
                               const total = saving + traffic;
                               const isActive = total > 0;
                               return (
@@ -503,8 +490,8 @@ const RoadmapPage = () => {
                         </table>
                       </div>
                       <div className="text-xs text-green-600 space-y-1">
-                        <p>С 3-го месяца — экономия бюджета 30%: <strong>+{fmt(r.budgetSaving)} руб/мес</strong></p>
-                        <p>С 8-го месяца — рост трафика +{r.trafficGrowth}% за счёт системы: <strong>+{fmt(r.lostRevenue + r.revenueFromNewTraffic)} руб/мес</strong></p>
+                        <p>С {budgetSavingMonth}-го месяца — экономия бюджета {Math.round(budgetSavingPercent * 100)}%: <strong>+{fmt(r.budgetSaving)} руб/мес</strong></p>
+                        <p>С {trafficGrowthMonth}-го месяца — рост трафика +{r.trafficGrowth}% за счёт системы: <strong>+{fmt(r.lostRevenue + r.revenueFromNewTraffic)} руб/мес</strong></p>
                         <p className="text-muted-foreground">в т.ч. +{r.newClientsFromTraffic} новых клиентов (конверсия продавцов {r.conversion}%)</p>
                       </div>
                     </div>
@@ -513,13 +500,13 @@ const RoadmapPage = () => {
                     {(() => {
                       const yearTotal = Array.from({ length: 12 }, (_, m) => {
                         const month = m + 1;
-                        return (month >= 3 ? r.budgetSaving : 0) + (month >= 8 ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
+                        return (month >= budgetSavingMonth ? r.budgetSaving : 0) + (month >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
                       }).reduce((a, b) => a + b, 0);
 
                       const scenarios = [
-                        { label: 'Пессимистичный', pct: 40, color: 'text-yellow-700', bg: 'bg-yellow-50', border: 'border-yellow-300', bar: 'bg-yellow-400' },
-                        { label: 'Средневзвешенный', pct: 70, color: 'text-[#2A168F]', bg: 'bg-[#f8f5ff]', border: 'border-[#2A168F]', bar: 'bg-[#6838CE]' },
-                        { label: 'Оптимистичный', pct: 100, color: 'text-green-700', bg: 'bg-green-50', border: 'border-green-400', bar: 'bg-green-500' },
+                        { label: 'Пессимистичный', pct: getNumContent('calc.scenarioPessimistic'), color: 'text-yellow-700', bg: 'bg-yellow-50', border: 'border-yellow-300', bar: 'bg-yellow-400' },
+                        { label: 'Средневзвешенный', pct: getNumContent('calc.scenarioBalanced'), color: 'text-[#2A168F]', bg: 'bg-[#f8f5ff]', border: 'border-[#2A168F]', bar: 'bg-[#6838CE]' },
+                        { label: 'Оптимистичный', pct: getNumContent('calc.scenarioOptimistic'), color: 'text-green-700', bg: 'bg-green-50', border: 'border-green-400', bar: 'bg-green-500' },
                       ];
 
                       return (
