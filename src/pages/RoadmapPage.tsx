@@ -140,7 +140,7 @@ const RoadmapPage = () => {
             const r = calcResults();
             const yearTotal = Array.from({ length: 12 }, (_, m) => {
               const mo = m + 1;
-              return (mo >= budgetSavingMonth ? r.budgetSaving : 0) + (mo >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
+              return (mo >= budgetSavingMonth ? r.budgetSaving : 0) + (mo >= trafficGrowthMonth ? r.revenueFromNewTraffic : 0);
             }).reduce((a, b) => a + b, 0);
             const scenarios = [
               { label: `Пессимистичный (${getNumContent('calc.scenarioPessimistic')}%)`, val: Math.round(yearTotal * getNumContent('calc.scenarioPessimistic') / 100), color: '#854d0e' },
@@ -424,10 +424,10 @@ const RoadmapPage = () => {
                 const revenueYear = check * clients * 12;
                 const earningsYear = revenueYear - budget * 12;
 
-                // Итого прогноза за 12 месяцев
+                // Итого прогноза за 12 месяцев (экономия бюджета + новые клиенты, без возврата потерь)
                 const yearTotal = Array.from({ length: 12 }, (_, m) => {
                   const month = m + 1;
-                  return (month >= budgetSavingMonth ? r.budgetSaving : 0) + (month >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
+                  return (month >= budgetSavingMonth ? r.budgetSaving : 0) + (month >= trafficGrowthMonth ? r.revenueFromNewTraffic : 0);
                 }).reduce((a, b) => a + b, 0);
 
                 return (
@@ -481,36 +481,31 @@ const RoadmapPage = () => {
                         <table className="w-full text-xs">
                           <thead>
                             <tr className="border-b border-green-300">
-                              <th className="text-left py-1.5 pr-1">Мес</th>
-                              <th className="text-right py-1.5 pr-1">Экономия бюджета</th>
-                              <th className="text-right py-1.5 pr-1">Возврат потерь</th>
-                              <th className="text-right py-1.5 pr-1">Новые клиенты</th>
+                              <th className="text-left py-1.5 pr-2">Мес</th>
+                              <th className="text-right py-1.5 pr-2">Экономия бюджета</th>
+                              <th className="text-right py-1.5 pr-2">Новые клиенты</th>
                               <th className="text-right py-1.5 font-bold">Итого +</th>
                             </tr>
                           </thead>
                           <tbody>
                             {(() => {
                               let totalSaving = 0;
-                              let totalLost = 0;
                               let totalNew = 0;
                               let grandTotal = 0;
                               const rows = Array.from({ length: 12 }, (_, m) => {
                                 const month = m + 1;
                                 const saving = month >= budgetSavingMonth ? r.budgetSaving : 0;
-                                const lost = month >= trafficGrowthMonth ? r.lostRevenue : 0;
                                 const newRev = month >= trafficGrowthMonth ? r.revenueFromNewTraffic : 0;
-                                const total = saving + lost + newRev;
+                                const total = saving + newRev;
                                 totalSaving += saving;
-                                totalLost += lost;
                                 totalNew += newRev;
                                 grandTotal += total;
                                 const isActive = total > 0;
                                 return (
                                   <tr key={m} className={`border-b border-green-100 ${isActive ? '' : 'text-muted-foreground'}`}>
-                                    <td className="py-1 pr-1">{month}</td>
-                                    <td className="text-right py-1 pr-1">{saving > 0 ? `+${fmt(saving)}` : '—'}</td>
-                                    <td className="text-right py-1 pr-1">{lost > 0 ? `+${fmt(lost)}` : '—'}</td>
-                                    <td className="text-right py-1 pr-1">{newRev > 0 ? `+${fmt(newRev)}` : '—'}</td>
+                                    <td className="py-1 pr-2">{month}</td>
+                                    <td className="text-right py-1 pr-2">{saving > 0 ? `+${fmt(saving)}` : '—'}</td>
+                                    <td className="text-right py-1 pr-2">{newRev > 0 ? `+${fmt(newRev)}` : '—'}</td>
                                     <td className={`text-right py-1 font-bold ${isActive ? 'text-green-700' : ''}`}>{total > 0 ? `+${fmt(total)}` : '—'}</td>
                                   </tr>
                                 );
@@ -519,10 +514,9 @@ const RoadmapPage = () => {
                                 <>
                                   {rows}
                                   <tr className="border-t-2 border-green-400 font-bold text-green-800">
-                                    <td className="py-2 pr-1">ИТОГО</td>
-                                    <td className="text-right py-2 pr-1">+{fmt(totalSaving)}</td>
-                                    <td className="text-right py-2 pr-1">+{fmt(totalLost)}</td>
-                                    <td className="text-right py-2 pr-1">+{fmt(totalNew)}</td>
+                                    <td className="py-2 pr-2">ИТОГО</td>
+                                    <td className="text-right py-2 pr-2">+{fmt(totalSaving)}</td>
+                                    <td className="text-right py-2 pr-2">+{fmt(totalNew)}</td>
                                     <td className="text-right py-2 text-green-700">+{fmt(grandTotal)}</td>
                                   </tr>
                                 </>
@@ -533,7 +527,6 @@ const RoadmapPage = () => {
                       </div>
                       <div className="text-xs text-green-600 space-y-1">
                         <p>С {budgetSavingMonth}-го месяца — экономия бюджета {Math.round(budgetSavingPercent * 100)}%: <strong>+{fmt(r.budgetSaving)} руб/мес</strong></p>
-                        <p>С {trafficGrowthMonth}-го месяца — возврат потерь от зон роста: <strong>+{fmt(r.lostRevenue)} руб/мес</strong></p>
                         <p>С {trafficGrowthMonth}-го месяца — новые клиенты от роста трафика +{r.trafficGrowth}%: <strong>+{r.newClientsFromTraffic} клиентов × {fmt(parseFloat(avgCheck))} руб = +{fmt(r.revenueFromNewTraffic)} руб/мес</strong></p>
                         <p className="text-muted-foreground ml-4">Конверсия продавцов: {r.conversion}% (уровень: {sellerLevel === 'bad' ? 'слабые' : sellerLevel === 'avg' ? 'средние' : sellerLevel === 'good' ? 'хорошие' : 'отличные'})</p>
                       </div>
