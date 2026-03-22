@@ -267,7 +267,7 @@ const AdminOneScreenPage = () => {
         .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,#fff 0px,#fff 8px,#6838CE 8px,#6838CE 16px)}
         .content{padding:16px 30px 20px;flex:1;display:flex;flex-direction:column}
         .speed-block{text-align:center;padding:14px;border-radius:12px;background:${speedBg};border:1.5px solid ${speedColor}40;margin-bottom:14px}
-        .car{font-size:28px;display:inline-block;transform:scaleX(-1);filter:sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)}
+        .car{font-size:28px;display:inline-block;transform:scaleX(-1);filter:sepia(1) saturate(5) hue-rotate(-10deg) brightness(1.1)}
         .footer{margin-top:auto;text-align:center;padding-top:12px;border-top:1px solid #e5e7eb}
         p{margin:0 0 3px}
       </style>

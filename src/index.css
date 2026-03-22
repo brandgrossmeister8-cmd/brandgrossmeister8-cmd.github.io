@@ -28,10 +28,10 @@
     --radius: 0.75rem;
     --dark: 250 73% 32%;
     --dark-foreground: 0 0% 100%;
-    --spectator-accent: 45 93% 58%;
-    --spectator-accent-foreground: 0 0% 10%;
+    --spectator-accent: 30 100% 50%;
+    --spectator-accent-foreground: 0 0% 100%;
     --track: 240 15% 20%;
-    --track-line: 45 100% 60%;
+    --track-line: 30 100% 50%;
     --track-surface: 240 10% 30%;
     --dashboard-bg: 240 15% 12%;
     --dashboard-border: 240 10% 25%;

@@ -83,7 +83,7 @@ const TitlePage = () => {
             >
               <motion.span
                 className="text-5xl block"
-                style={{ filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}
+                style={{ filter: 'sepia(1) saturate(5) hue-rotate(-10deg) brightness(1.1)' }}
                 animate={{ scaleX: [-1, -1, 1, 1] }}
                 transition={{ duration: 6, repeat: Infinity, ease: 'linear', times: [0, 0.49, 0.5, 1] }}
               >

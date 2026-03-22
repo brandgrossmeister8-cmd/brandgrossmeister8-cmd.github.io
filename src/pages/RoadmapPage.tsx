@@ -115,7 +115,7 @@ const RoadmapPage = () => {
         .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,#fff 0px,#fff 8px,#6838CE 8px,#6838CE 16px)}
         .content{padding:12px 24px 16px}
         p{margin:0 0 2px}
-        .car{font-size:24px;display:inline-block;transform:scaleX(-1);filter:sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)}
+        .car{font-size:24px;display:inline-block;transform:scaleX(-1);filter:sepia(1) saturate(5) hue-rotate(-10deg) brightness(1.1)}
       </style></head><body>
       <div class="page">
         <div class="header">

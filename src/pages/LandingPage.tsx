@@ -22,7 +22,7 @@ const fadeUp = {
 const fireConfetti = () => {
   const duration = 2000;
   const end = Date.now() + duration;
-  const colors = ['#6838CE', '#B8ACFF', '#FFD700', '#FF6B6B', '#4338DF', '#ffffff'];
+  const colors = ['#6838CE', '#B8ACFF', '#FF8C00', '#FF6B6B', '#4338DF', '#ffffff'];
 
   const frame = () => {
     confetti({
@@ -123,7 +123,7 @@ const LandingPage = () => {
               className="w-full sm:w-[280px] justify-center bg-white text-[#2A168F] hover:bg-white/90 font-bold h-11 sm:h-14 px-4 sm:px-10 text-sm sm:text-lg rounded-lg"
               onClick={() => { fireConfetti(); setTimeout(() => navigate(isAuthorized() ? '/game' : '/access'), 800); }}
             >
-              <span className="text-lg sm:text-2xl mr-1 sm:mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Включить зажигание <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
+              <span className="text-lg sm:text-2xl mr-1 sm:mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(-10deg) brightness(1.1)' }}>🏎️</span> Включить зажигание <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
             </Button>
             <Button variant="outline" className="w-full sm:w-[280px] justify-center border-white/50 text-white bg-white/10 h-11 sm:h-14 px-4 sm:px-10 text-sm sm:text-lg rounded-lg" onClick={() => {
               document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
@@ -322,7 +322,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Готовы к заезду?</h2>
           <p className="text-muted-foreground mb-8">Запустите игру прямо сейчас — нужен только браузер</p>
           <Button variant="hero" className="w-full sm:w-[300px] justify-center h-11 sm:h-14 px-4 sm:px-10 text-sm sm:text-lg rounded-lg" onClick={() => { fireConfetti(); setTimeout(() => navigate(isAuthorized() ? '/game' : '/access'), 800); }}>
-            <span className="text-lg sm:text-2xl mr-1 sm:mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(10deg) brightness(1.1)' }}>🏎️</span> Включить зажигание <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
+            <span className="text-lg sm:text-2xl mr-1 sm:mr-2" style={{ display: 'inline-block', transform: 'scaleX(-1)', filter: 'sepia(1) saturate(5) hue-rotate(-10deg) brightness(1.1)' }}>🏎️</span> Включить зажигание <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
           </Button>
         </motion.div>
       </section>
