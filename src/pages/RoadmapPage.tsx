@@ -147,10 +147,13 @@ const RoadmapPage = () => {
               { label: `Средневзвешенный (${getNumContent('calc.scenarioBalanced')}%)`, val: Math.round(yearTotal * getNumContent('calc.scenarioBalanced') / 100), color: '#2A168F' },
               { label: `Оптимистичный (${getNumContent('calc.scenarioOptimistic')}%)`, val: Math.round(yearTotal * getNumContent('calc.scenarioOptimistic') / 100), color: '#166534' },
             ];
-            const yearlyEarnings = (check * clients * 12) - (budget * 12);
+            const actualRevenue = r.currentRevenue;
+            const yearlyEarnings = (actualRevenue * 12) - (budget * 12);
             return '<div style="border:1.5px solid #3b82f6;border-radius:8px;padding:8px 10px;margin-top:8px;background:#eff6ff">' +
               '<p style="font-weight:bold;font-size:10px;color:#1e40af;margin-bottom:4px">ЗАРАБОТОК СЕГОДНЯ ЗА ГОД</p>' +
-              '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Выручка за год</span><span>' + new Intl.NumberFormat('ru-RU').format(check * clients * 12) + ' руб</span></div>' +
+              '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Потенциал выручки</span><span>' + new Intl.NumberFormat('ru-RU').format(check * clients * 12) + ' руб</span></div>' +
+              '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Потери из-за зон роста (−' + r.totalLossPercent + '%)</span><span style="color:#dc2626">−' + new Intl.NumberFormat('ru-RU').format(r.lostRevenue * 12) + ' руб</span></div>' +
+              '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Фактическая выручка (' + r.efficiency + '%)</span><span>' + new Intl.NumberFormat('ru-RU').format(actualRevenue * 12) + ' руб</span></div>' +
               '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Расходы на рекламу за год</span><span style="color:#dc2626">−' + new Intl.NumberFormat('ru-RU').format(budget * 12) + ' руб</span></div>' +
               '<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:bold;border-top:1px solid #93c5fd;padding-top:3px;margin-top:2px"><span style="color:#1e40af">Заработок за год</span><span style="color:' + (yearlyEarnings >= 0 ? '#1e40af' : '#dc2626') + '">' + (yearlyEarnings >= 0 ? '' : '−') + new Intl.NumberFormat('ru-RU').format(Math.abs(yearlyEarnings)) + ' руб</span></div>' +
               '</div>' +
@@ -280,8 +283,8 @@ const RoadmapPage = () => {
     const savingMonths = 12 - budgetSavingMonth + 1;
     const yearlyGain = (lostRevenue * trafficMonths) + (budgetSaving * savingMonths) + (revenueFromNewTraffic * trafficMonths);
 
-    // Заработок сегодня за год: средний чек × клиенты × 12 − реклама × 12
-    const currentYearlyEarnings = (check * clients * 12) - (budget * 12);
+    // Заработок сегодня за год: фактическая выручка × 12 − реклама × 12
+    const currentYearlyEarnings = (currentRevenue * 12) - (budget * 12);
 
     return {
       currentRevenue,
@@ -421,16 +424,24 @@ const RoadmapPage = () => {
                       <p className="font-bold text-blue-800 text-sm">Ваш заработок сегодня за год</p>
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Выручка за год (средний чек × клиенты × 12)</span>
-                          <span className="font-mono font-medium">{fmt(parseFloat(avgCheck) * parseFloat(clientsPerMonth) * 12)} руб</span>
+                          <span className="text-muted-foreground">Потенциал выручки (средний чек × клиенты × 12)</span>
+                          <span className="font-mono font-medium">{fmt(r.potentialRevenue * 12)} руб</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Потери из-за зон роста (−{r.totalLossPercent}%)</span>
+                          <span className="font-mono font-medium text-red-600">−{fmt(r.lostRevenue * 12)} руб</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Фактическая выручка за год ({r.efficiency}%)</span>
+                          <span className="font-mono font-medium">{fmt(r.currentRevenue * 12)} руб</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Расходы на рекламу за год</span>
-                          <span className="font-mono font-medium text-red-600">−{fmt(parseFloat(adBudget) * 12)} руб</span>
+                          <span className="font-mono font-medium text-red-600">−{fmt(parseFloat(adBudget || '0') * 12)} руб</span>
                         </div>
                         <div className="flex justify-between border-t border-blue-300 pt-2">
                           <span className="font-bold text-blue-800">Заработок за год</span>
-                          <span className={`font-mono font-bold text-lg ${r.currentYearlyEarnings >= 0 ? 'text-blue-800' : 'text-red-600'}`}>{r.currentYearlyEarnings >= 0 ? '' : '−'}{fmt(Math.abs(r.currentYearlyEarnings))} руб</span>
+                          <span className={`font-mono font-bold text-lg ${(r.currentRevenue * 12 - parseFloat(adBudget || '0') * 12) >= 0 ? 'text-blue-800' : 'text-red-600'}`}>{(r.currentRevenue * 12 - parseFloat(adBudget || '0') * 12) >= 0 ? '' : '−'}{fmt(Math.abs(r.currentRevenue * 12 - parseFloat(adBudget || '0') * 12))} руб</span>
                         </div>
                       </div>
                     </div>
