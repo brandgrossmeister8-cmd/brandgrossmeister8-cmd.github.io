@@ -147,15 +147,17 @@ const RoadmapPage = () => {
               { label: `Средневзвешенный (${getNumContent('calc.scenarioBalanced')}%)`, val: Math.round(yearTotal * getNumContent('calc.scenarioBalanced') / 100), color: '#2A168F' },
               { label: `Оптимистичный (${getNumContent('calc.scenarioOptimistic')}%)`, val: Math.round(yearTotal * getNumContent('calc.scenarioOptimistic') / 100), color: '#166534' },
             ];
-            const actualRevenue = r.currentRevenue;
-            const yearlyEarnings = (actualRevenue * 12) - (budget * 12);
+            const revenueYear = check * clients * 12;
+            const yearlyEarnings = revenueYear - (budget * 12);
             return '<div style="border:1.5px solid #3b82f6;border-radius:8px;padding:8px 10px;margin-top:8px;background:#eff6ff">' +
               '<p style="font-weight:bold;font-size:10px;color:#1e40af;margin-bottom:4px">ЗАРАБОТОК СЕГОДНЯ ЗА ГОД</p>' +
-              '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Потенциал выручки</span><span>' + new Intl.NumberFormat('ru-RU').format(check * clients * 12) + ' руб</span></div>' +
-              '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Потери из-за зон роста (−' + r.totalLossPercent + '%)</span><span style="color:#dc2626">−' + new Intl.NumberFormat('ru-RU').format(r.lostRevenue * 12) + ' руб</span></div>' +
-              '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Фактическая выручка (' + r.efficiency + '%)</span><span>' + new Intl.NumberFormat('ru-RU').format(actualRevenue * 12) + ' руб</span></div>' +
+              '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Выручка сегодня (чек × клиенты × 12)</span><span>' + new Intl.NumberFormat('ru-RU').format(revenueYear) + ' руб</span></div>' +
               '<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>Расходы на рекламу за год</span><span style="color:#dc2626">−' + new Intl.NumberFormat('ru-RU').format(budget * 12) + ' руб</span></div>' +
               '<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:bold;border-top:1px solid #93c5fd;padding-top:3px;margin-top:2px"><span style="color:#1e40af">Заработок за год</span><span style="color:' + (yearlyEarnings >= 0 ? '#1e40af' : '#dc2626') + '">' + (yearlyEarnings >= 0 ? '' : '−') + new Intl.NumberFormat('ru-RU').format(Math.abs(yearlyEarnings)) + ' руб</span></div>' +
+              '</div>' +
+              '<div style="border:1.5px solid #dc2626;border-radius:8px;padding:8px 10px;margin-top:8px;background:#fef2f2">' +
+              '<p style="font-weight:bold;font-size:10px;color:#991b1b;margin-bottom:4px">ВЫ НЕДОЗАРАБАТЫВАЕТЕ (' + r.totalLossPercent + '%)</p>' +
+              '<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:bold"><span style="color:#991b1b">Потери за год</span><span style="color:#dc2626">−' + new Intl.NumberFormat('ru-RU').format(r.lostRevenue * 12) + ' руб</span></div>' +
               '</div>' +
               '<div style="border:1.5px solid #2A168F;border-radius:8px;padding:8px 10px;margin-top:8px;background:#f8f5ff">' +
               '<p style="font-weight:bold;font-size:10px;color:#2A168F;margin-bottom:6px">ПРОГНОЗ ЗА 12 МЕСЯЦЕВ</p>' +
@@ -283,8 +285,8 @@ const RoadmapPage = () => {
     const savingMonths = 12 - budgetSavingMonth + 1;
     const yearlyGain = (lostRevenue * trafficMonths) + (budgetSaving * savingMonths) + (revenueFromNewTraffic * trafficMonths);
 
-    // Заработок сегодня за год: фактическая выручка × 12 − реклама × 12
-    const currentYearlyEarnings = (currentRevenue * 12) - (budget * 12);
+    // Заработок сегодня за год: выручка × 12 − реклама × 12
+    const currentYearlyEarnings = (check * clients * 12) - (budget * 12);
 
     return {
       currentRevenue,
@@ -416,44 +418,48 @@ const RoadmapPage = () => {
 
               {avgCheck && clientsPerMonth && (() => {
                 const r = calcResults();
+                const check = parseFloat(avgCheck) || 0;
+                const clients = parseFloat(clientsPerMonth) || 0;
+                const budget = parseFloat(adBudget || '0') || 0;
+                const revenueYear = check * clients * 12;
+                const earningsYear = revenueYear - budget * 12;
+
+                // Итого прогноза за 12 месяцев
+                const yearTotal = Array.from({ length: 12 }, (_, m) => {
+                  const month = m + 1;
+                  return (month >= budgetSavingMonth ? r.budgetSaving : 0) + (month >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
+                }).reduce((a, b) => a + b, 0);
+
                 return (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
 
-                    {/* Заработок сегодня за год */}
+                    {/* 1. Заработок сегодня за год */}
                     <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 space-y-2">
                       <p className="font-bold text-blue-800 text-sm">Ваш заработок сегодня за год</p>
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Потенциал выручки (средний чек × клиенты × 12)</span>
-                          <span className="font-mono font-medium">{fmt(r.potentialRevenue * 12)} руб</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Потери из-за зон роста (−{r.totalLossPercent}%)</span>
-                          <span className="font-mono font-medium text-red-600">−{fmt(r.lostRevenue * 12)} руб</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Фактическая выручка за год ({r.efficiency}%)</span>
-                          <span className="font-mono font-medium">{fmt(r.currentRevenue * 12)} руб</span>
+                          <span className="text-muted-foreground">Выручка сегодня (средний чек × клиенты × 12)</span>
+                          <span className="font-mono font-medium">{fmt(revenueYear)} руб</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Расходы на рекламу за год</span>
-                          <span className="font-mono font-medium text-red-600">−{fmt(parseFloat(adBudget || '0') * 12)} руб</span>
+                          <span className="font-mono font-medium text-red-600">−{fmt(budget * 12)} руб</span>
                         </div>
                         <div className="flex justify-between border-t border-blue-300 pt-2">
                           <span className="font-bold text-blue-800">Заработок за год</span>
-                          <span className={`font-mono font-bold text-lg ${(r.currentRevenue * 12 - parseFloat(adBudget || '0') * 12) >= 0 ? 'text-blue-800' : 'text-red-600'}`}>{(r.currentRevenue * 12 - parseFloat(adBudget || '0') * 12) >= 0 ? '' : '−'}{fmt(Math.abs(r.currentRevenue * 12 - parseFloat(adBudget || '0') * 12))} руб</span>
+                          <span className={`font-mono font-bold text-lg ${earningsYear >= 0 ? 'text-blue-800' : 'text-red-600'}`}>{earningsYear >= 0 ? '' : '−'}{fmt(Math.abs(earningsYear))} руб</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Мультипликативная цепочка потерь */}
+                    {/* 2. Потери по зонам роста */}
                     <div className="rounded-xl bg-red-50 border border-red-200 p-4 space-y-2">
-                      <p className="font-bold text-red-800 text-sm">Каскад потерь по зонам роста</p>
+                      <p className="font-bold text-red-800 text-sm">Потери по зонам роста</p>
                       <p className="text-xs text-red-600">Каждая слабая точка снижает эффективность от оставшегося</p>
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Потенциал</span>
-                          <span>100% → {fmt(r.potentialRevenue)} руб/мес</span>
+                          <span>Ваша выручка сегодня</span>
+                          <span>{fmt(r.potentialRevenue)} руб/мес</span>
                         </div>
                         {r.breakdown.map((b, i) => (
                           <div key={i} className="flex justify-between text-sm">
@@ -462,15 +468,15 @@ const RoadmapPage = () => {
                           </div>
                         ))}
                         <div className="flex justify-between text-sm font-bold border-t border-red-300 pt-2">
-                          <span className="text-red-800">Итого эффективность: {r.efficiency}%</span>
-                          <span className="text-red-900">−{fmt(r.lostRevenue)} руб/мес</span>
+                          <span className="text-red-800">Вы недозарабатываете ({r.totalLossPercent}%)</span>
+                          <span className="text-red-900">−{fmt(r.lostRevenue * 12)} руб/год</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Помесячный прогноз */}
+                    {/* 3. Прогноз потенциала роста выручки по месяцам */}
                     <div className="rounded-xl bg-green-50 border border-green-200 p-4 space-y-3">
-                      <p className="font-bold text-green-800 text-sm">Прогноз по месяцам</p>
+                      <p className="font-bold text-green-800 text-sm">Прогноз потенциала роста выручки по месяцам</p>
                       <div className="overflow-x-auto">
                         <table className="w-full text-xs">
                           <thead>
@@ -482,21 +488,40 @@ const RoadmapPage = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {Array.from({ length: 12 }, (_, m) => {
-                              const month = m + 1;
-                              const saving = month >= budgetSavingMonth ? r.budgetSaving : 0;
-                              const traffic = month >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0;
-                              const total = saving + traffic;
-                              const isActive = total > 0;
+                            {(() => {
+                              let totalSaving = 0;
+                              let totalTraffic = 0;
+                              let grandTotal = 0;
+                              const rows = Array.from({ length: 12 }, (_, m) => {
+                                const month = m + 1;
+                                const saving = month >= budgetSavingMonth ? r.budgetSaving : 0;
+                                const traffic = month >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0;
+                                const total = saving + traffic;
+                                totalSaving += saving;
+                                totalTraffic += traffic;
+                                grandTotal += total;
+                                const isActive = total > 0;
+                                return (
+                                  <tr key={m} className={`border-b border-green-100 ${isActive ? '' : 'text-muted-foreground'}`}>
+                                    <td className="py-1 pr-2">{month} мес</td>
+                                    <td className="text-right py-1 pr-2">{saving > 0 ? `+${fmt(saving)}` : '—'}</td>
+                                    <td className="text-right py-1 pr-2">{traffic > 0 ? `+${fmt(traffic)}` : '—'}</td>
+                                    <td className={`text-right py-1 font-bold ${isActive ? 'text-green-700' : ''}`}>{total > 0 ? `+${fmt(total)}` : '—'}</td>
+                                  </tr>
+                                );
+                              });
                               return (
-                                <tr key={m} className={`border-b border-green-100 ${isActive ? '' : 'text-muted-foreground'}`}>
-                                  <td className="py-1 pr-2">{month} мес</td>
-                                  <td className="text-right py-1 pr-2">{saving > 0 ? `+${fmt(saving)}` : '—'}</td>
-                                  <td className="text-right py-1 pr-2">{traffic > 0 ? `+${fmt(traffic)}` : '—'}</td>
-                                  <td className={`text-right py-1 font-bold ${isActive ? 'text-green-700' : ''}`}>{total > 0 ? `+${fmt(total)}` : '—'}</td>
-                                </tr>
+                                <>
+                                  {rows}
+                                  <tr className="border-t-2 border-green-400 font-bold text-green-800">
+                                    <td className="py-2 pr-2">ИТОГО за 12 мес</td>
+                                    <td className="text-right py-2 pr-2">+{fmt(totalSaving)}</td>
+                                    <td className="text-right py-2 pr-2">+{fmt(totalTraffic)}</td>
+                                    <td className="text-right py-2 text-green-700">+{fmt(grandTotal)}</td>
+                                  </tr>
+                                </>
                               );
-                            })}
+                            })()}
                           </tbody>
                         </table>
                       </div>
@@ -507,13 +532,8 @@ const RoadmapPage = () => {
                       </div>
                     </div>
 
-                    {/* 3 сценария за 12 месяцев */}
+                    {/* 4. Три сценария за 12 месяцев */}
                     {(() => {
-                      const yearTotal = Array.from({ length: 12 }, (_, m) => {
-                        const month = m + 1;
-                        return (month >= budgetSavingMonth ? r.budgetSaving : 0) + (month >= trafficGrowthMonth ? (r.lostRevenue + r.revenueFromNewTraffic) : 0);
-                      }).reduce((a, b) => a + b, 0);
-
                       const scenarios = [
                         { label: 'Пессимистичный', pct: getNumContent('calc.scenarioPessimistic'), color: 'text-yellow-700', bg: 'bg-yellow-50', border: 'border-yellow-300', bar: 'bg-yellow-400' },
                         { label: 'Средневзвешенный', pct: getNumContent('calc.scenarioBalanced'), color: 'text-[#2A168F]', bg: 'bg-[#f8f5ff]', border: 'border-[#2A168F]', bar: 'bg-[#6838CE]' },
@@ -527,13 +547,12 @@ const RoadmapPage = () => {
                           {/* Графики */}
                           <div className="flex items-end gap-3 justify-center h-44">
                             <div className="flex flex-col items-center gap-1">
-                              <span className="text-xs font-bold">{fmt(r.currentRevenue * 12)}</span>
-                              <div className="w-14 sm:w-20 rounded-t-lg bg-red-400" style={{ height: '30px' }} />
-                              <span className="text-[10px] text-muted-foreground text-center">Сейчас<br/>12 мес</span>
+                              <span className="text-xs font-bold">{fmt(earningsYear)}</span>
+                              <div className="w-14 sm:w-20 rounded-t-lg bg-blue-400" style={{ height: '30px' }} />
+                              <span className="text-[10px] text-muted-foreground text-center">Сейчас<br/>за год</span>
                             </div>
                             {scenarios.map((s, i) => {
                               const val = Math.round(yearTotal * s.pct / 100);
-                              const total = r.currentRevenue * 12 + val;
                               return (
                                 <div key={i} className="flex flex-col items-center gap-1">
                                   <span className={`text-xs font-bold ${s.color}`}>+{fmt(val)}</span>
